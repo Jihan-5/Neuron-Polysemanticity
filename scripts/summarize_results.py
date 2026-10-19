@@ -19,6 +19,22 @@ ROOT = Path(__file__).resolve().parents[1]
 R = ROOT / "results"
 
 
+def pick(full: str, pilot: str, key: str) -> tuple[Path, str]:
+    """The full run when it has finished (its ``key`` file exists), otherwise the pilot."""
+    if (R / full / key).exists():
+        return R / full, "full run"
+    return R / pilot, "pilot"
+
+
+def rel(p: Path) -> str:
+    return str(p.relative_to(ROOT))
+
+
+def cfg_of(p: Path) -> dict:
+    m = p / "manifest.json"
+    return json.loads(m.read_text())["config"] if m.exists() else {}
+
+
 def f(x, nd=2):
     try:
         if pd.isna(x):
@@ -78,7 +94,7 @@ wrong singleton.
 
 
 def section_e4() -> str:
-    p = R / "e4_coverage_d3_pilot"
+    p, lab = pick("e4_full", "e4_coverage_d3_pilot", "e4_summary.csv")
     if not (p / "e4_summary.csv").exists():
         return ""
     df = pd.read_csv(p / "e4_summary.csv")
@@ -94,20 +110,21 @@ def section_e4() -> str:
     s = json.loads((p / "e4_summary.json").read_text())
     reps = s["reps"]
     empty = ", ".join(f"{k}: {v:.2f}" for k, v in s.get("ar_empty_rate", {}).items())
-    return f"""### E4 — coverage in the certified d = 3 problem *(pilot: {reps} replicates per cell; 500 planned)*
+    planned = "; 500 planned" if lab == "pilot" else ""
+    return f"""### E4 — coverage in the certified d = 3 problem *({lab}: {reps} replicates per cell{planned})*
 
 {t}
 
 AR-grid empty-set rate by condition: {empty}. Full tables (all `n`) are in
-`results/e4_coverage_d3_pilot/e4_summary.csv`.
+`{rel(p)}/e4_summary.csv`.
 
-<p align="center"><img src="results/e4_coverage_d3_pilot/e4_coverage_width_d3.png" width="96%"></p>
-<p align="center"><img src="results/e4_coverage_d3_pilot/e4_identification_map_ismb.png" width="70%"></p>
+<p align="center"><img src="{rel(p)}/e4_coverage_width_d3.png" width="96%"></p>
+<p align="center"><img src="{rel(p)}/e4_identification_map_ismb.png" width="70%"></p>
 """
 
 
 def section_e1() -> str:
-    p = R / "e1_pilot"
+    p, lab = pick("e1_full", "e1_pilot", "e1_equal_weight_summary.csv")
     if not (p / "e1_equal_weight_summary.csv").exists():
         return ""
     df = pd.read_csv(p / "e1_equal_weight_summary.csv")
@@ -116,14 +133,15 @@ def section_e1() -> str:
                         "confidently_wrong", "spearman", "auroc_poly", "support_f1"] if c in df]
     df = df.sort_values("mae", na_position="last")
     s = json.loads((p / "e1_summary.json").read_text())
-    return f"""### E1 — 24-setting planted grid *(pilot: {s['reps']} test datasets per cell; 500 planned)*
+    planned = "; 500 planned" if lab == "pilot" else ""
+    return f"""### E1 — 24-setting planted grid *({lab}: {s['reps']} test datasets per cell{planned})*
 
 Equal weight over the 24 cells (`d = K = 16`, `E = 6`, `τ = 0.10`). Score-only methods enter the
 count columns only through development-split calibration (`+devcal`).
 
 {md_table(df, cols)}
 
-<p align="center"><img src="results/e1_pilot/e1_mae_vs_n.png" width="96%"></p>
+<p align="center"><img src="{rel(p)}/e1_mae_vs_n.png" width="96%"></p>
 """
 
 
@@ -150,7 +168,7 @@ Under the E2 stress conditions (10 datasets each), count MAE:
 
 
 def section_e2() -> str:
-    p = R / "e2_pilot"
+    p, lab = pick("e2_full", "e2_pilot", "e2_by_condition.csv")
     if not (p / "e2_by_condition.csv").exists():
         return ""
     df = pd.read_csv(p / "e2_by_condition.csv")
@@ -164,33 +182,34 @@ def section_e2() -> str:
             "confidently_wrong:boot_percentile", "width_mean:ismb"]
     cols = [c for c in cols if c in piv]
     s = json.loads((p / "e2_summary.json").read_text())
-    return f"""### E2 — assumption stress *(pilot: {s['reps']} datasets per condition)*
+    return f"""### E2 — assumption stress *({lab}: {s['reps']} datasets per condition)*
 
 {md_table(piv, cols)}
 
-<p align="center"><img src="results/e2_pilot/e2_stress_intervals.png" width="96%"></p>
+<p align="center"><img src="{rel(p)}/e2_stress_intervals.png" width="96%"></p>
 """
 
 
 def section_e3() -> str:
-    p = R / "e3_pilot"
+    p, lab = pick("e3_full", "e3_pilot", "e3_stability.csv")
     if not (p / "e3_stability.csv").exists():
         return ""
     df = pd.read_csv(p / "e3_stability.csv").sort_values("frac_neurons_changed")
     cols = [c for c in ["method", "frac_neurons_changed", "cross_corpus_spearman", "mae", "coverage"] if c in df]
-    return f"""### E3 — frequency shift with fixed loadings *(pilot)*
+    reps = cfg_of(p).get("reps", "?")
+    return f"""### E3 — frequency shift with fixed loadings *({lab}: {reps} replicates)*
 
 Same `A`, three corpora with activity rates centred at 0.05 / 0.15 / 0.30; the truth is
 identical across corpora by construction.
 
 {md_table(df, cols)}
 
-<p align="center"><img src="results/e3_pilot/e3_frequency_shift_stability.png" width="60%"></p>
+<p align="center"><img src="{rel(p)}/e3_frequency_shift_stability.png" width="60%"></p>
 """
 
 
 def section_e10() -> str:
-    p = R / "e10_pilot"
+    p, lab = pick("e10_full", "e10_pilot", "e10_summary.csv")
     if not (p / "e10_summary.csv").exists():
         return ""
     df = pd.read_csv(p / "e10_summary.csv")
@@ -201,26 +220,26 @@ def section_e10() -> str:
     for b in ("random", "balanced"):
         r = paired_difference(rows["adaptive"].to_numpy(), rows[b].to_numpy())
         diffs.append(f"adaptive − {b}: **{r['diff']:.2f}** [{r['lo']:.2f}, {r['hi']:.2f}]")
-    return f"""### E10 — adaptive environment selection *(pilot, {len(rows)} replicates; inference on fresh data)*
+    return f"""### E10 — adaptive environment selection *({lab}: {len(rows)} replicates; inference on fresh data)*
 
 {md_table(df, ['strategy', 'width', 'coverage', 'all_covered', 'n_groups'])}
 
-Paired width differences (95 % CI, replicate-level): {'; '.join(diffs)}. Suggestive only: two
-comparisons, and each interval barely excludes 0.
+Paired width differences (95 % CI, replicate-level): {'; '.join(diffs)}.
 """
 
 
 def section_e5_e6() -> str:
     out = ""
-    p = R / "e5_pilot"
+    p, lab = pick("e5_full", "e5_pilot", "e5_summary.csv")
     if (p / "e5_models.csv").exists():
+        c5 = cfg_of(p)
         models = pd.read_csv(p / "e5_models.csv")
         cols_m = ["n_represented", "n_target", "overcomplete"] + (["ismb__misfit_rejected"] if "ismb__misfit_rejected" in models else [])
         m = models.groupby(["d", "feature_prob"])[cols_m].mean().reset_index()
         m = m.rename(columns={"ismb__misfit_rejected": "ISMB gate fired"})
         summ = pd.read_csv(p / "e5_summary.csv")
         cols = [c for c in ["d", "feature_prob", "method", "mae", "coverage", "width_mean"] if c in summ]
-        out += f"""### E5 — trained toy superposition models *(pilot: 2 seeds, 4k steps)*
+        out += f"""### E5 — trained toy superposition models *({lab}: {c5.get('seeds', '?')} seeds, {c5.get('steps', '?')} steps)*
 
 Represented features per regime (truth from the learned `W`; every model is overcomplete,
 which is outside the square model, so the honest outcome is abstention):
@@ -229,12 +248,13 @@ which is outside the square model, so the honest outcome is abstention):
 
 {md_table(summ[cols], cols)}
 """
-    p = R / "e6_pilot"
+    p, lab = pick("e6_full", "e6_pilot", "e6_summary.csv")
     if (p / "e6_summary.csv").exists():
+        c6 = cfg_of(p)
         s = pd.read_csv(p / "e6_summary.csv")
         corr = json.loads((p / "e6_summary.json").read_text())["corr_fve_vs_count_mae"]
         out += f"""
-### E6 — TopK SAE baseline on planted data *(pilot)*
+### E6 — TopK SAE baseline on planted data *({lab}: {c6.get('reps', '?')} datasets, {c6.get('max_steps', '?')} steps)*
 
 {md_table(s, ['dict_mult', 'k', 'val_fve', 'dead_frac', 'mmcs_across_seeds', 'count_mae', 'count_bias'])}
 
