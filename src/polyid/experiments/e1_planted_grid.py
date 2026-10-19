@@ -47,8 +47,8 @@ def plot(agg: pd.DataFrame, out_dir: Path) -> list[str]:
 
     paths = []
     agg = agg.copy()
-    count_methods = [m for m in agg["method"].unique() if "@" not in m and agg.loc[agg.method == m, "mae"].notna().any()]
-    count_methods = sorted(count_methods, key=lambda m: (m not in style.METHOD_SLOT, m))[:8]
+    present = set(agg["method"])
+    count_methods = [m for m in style.POINT_FIGURE_METHODS if m in present]
     divs = sorted(agg["diversity"].dropna().unique()) if "diversity" in agg else [None]
     fig, axes = plt.subplots(1, len(divs), figsize=(4.8 * len(divs), 3.6), sharey=True, squeeze=False)
     for ax, dv in zip(axes[0], divs):

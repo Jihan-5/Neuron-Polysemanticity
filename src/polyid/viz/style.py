@@ -22,17 +22,24 @@ AXIS = "#c3c2b7"
 
 CATEGORICAL = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"]
 
-# fixed method -> slot assignment (colour follows the entity)
+# fixed method -> slot assignment (colour follows the entity). Eight hues, more methods:
+# methods sharing a hue are never drawn in the same figure (interval figures vs point figures).
 METHOD_SLOT = {
     "ismb": 0,
     "jointdiag": 1,
-    "boot_percentile": 2,
-    "sensitivity": 3,
-    "ar_grid": 4,
+    "boot_percentile": 2,   # interval figures
+    "dpmi_style": 2,        # point figures
+    "sensitivity": 3,       # interval figures
+    "factor_analysis": 3,   # point figures
+    "ar_grid": 4,           # interval figures
+    "pca": 4,               # point figures
     "fastica": 5,
-    "topk_sae": 6,
+    "topk_sae": 6,          # toy figures
+    "dict_learning": 6,     # planted point figures
     "gmm_bic": 7,
 }
+POINT_FIGURE_METHODS = ["ismb", "jointdiag", "fastica", "gmm_bic+devcal", "dpmi_style+devcal",
+                        "factor_analysis", "dict_learning", "pca"]
 
 STATUS = {
     "identified": "#0ca30c",  # good
