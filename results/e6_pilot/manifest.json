@@ -1,0 +1,82 @@
+{
+  "experiment": "e6_sae_comparison",
+  "created_utc": "2026-10-19T01:37:39+00:00",
+  "config": {
+    "seed": 20261018,
+    "spec": {
+      "tau": 0.1,
+      "v_min": 0.006,
+      "max_abs_cos": 0.98
+    },
+    "generator": {
+      "d": 16,
+      "K": 16,
+      "n_envs": 6,
+      "n_per_env": 5000,
+      "col_support_min": 1,
+      "col_support_max": 4,
+      "loading_low": 0.3,
+      "background_sd": 0.0,
+      "tau": 0.1,
+      "tau_margin": 0.03,
+      "max_abs_cos": 0.9,
+      "max_cond": 100.0,
+      "rate_center": 0.15,
+      "rate_spread": 0.6,
+      "diversity": "well_separated",
+      "collinear_gamma": 0.6,
+      "collinear_eta": 0.15,
+      "min_visibility": 0.012,
+      "mag_low": 0.5,
+      "mag_high": 1.5,
+      "noise_rel_sd": 0.05,
+      "noise_mode": "iid"
+    },
+    "taus": [
+      0.1,
+      0.05,
+      0.2
+    ],
+    "experiment": "e6_sae_comparison",
+    "reps": 4,
+    "dict_mults": [
+      2,
+      4
+    ],
+    "ks": [
+      1,
+      2,
+      4
+    ],
+    "sae_seeds": 3,
+    "max_steps": 3000
+  },
+  "config_hash": "4a3bd3319e5c5e44",
+  "git": {
+    "commit": "cce28d67db7df70d4a4fe6c4dab364192020cc87",
+    "dirty": true
+  },
+  "versions": {
+    "python": "3.13.16",
+    "platform": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "sklearn": "1.9.1",
+    "pandas": "3.0.6",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.20.1",
+    "datasets": null
+  },
+  "seeds": {
+    "root": 20261018
+  },
+  "argv": [
+    ".venv/bin/polyid",
+    "run",
+    "configs/toy/e6_sae_comparison.yaml",
+    "--out",
+    "results/e6_pilot",
+    "reps=4",
+    "max_steps=3000"
+  ]
+}

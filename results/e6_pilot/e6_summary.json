@@ -1,0 +1,59 @@
+{
+  "summary": [
+    {
+      "dict_mult": 2,
+      "k": 1,
+      "val_fve": 0.650347565436269,
+      "dead_frac": 0.010416666666666666,
+      "mmcs_across_seeds": 0.9326788534720739,
+      "count_mae": 13.505208333333334,
+      "count_bias": 13.505208333333334
+    },
+    {
+      "dict_mult": 2,
+      "k": 2,
+      "val_fve": 0.8115111069757197,
+      "dead_frac": 0.036458333333333336,
+      "mmcs_across_seeds": 0.8818883647521337,
+      "count_mae": 7.270833333333333,
+      "count_bias": 7.270833333333333
+    },
+    {
+      "dict_mult": 2,
+      "k": 4,
+      "val_fve": 0.9619730027267342,
+      "dead_frac": 0.109375,
+      "mmcs_across_seeds": 0.8603353450695673,
+      "count_mae": 6.864583333333333,
+      "count_bias": 6.864583333333333
+    },
+    {
+      "dict_mult": 4,
+      "k": 1,
+      "val_fve": 0.7152888402779491,
+      "dead_frac": 0.046875,
+      "mmcs_across_seeds": 0.9293435861666998,
+      "count_mae": 23.890625,
+      "count_bias": 23.890625
+    },
+    {
+      "dict_mult": 4,
+      "k": 2,
+      "val_fve": 0.8329363232646302,
+      "dead_frac": 0.037760416666666664,
+      "mmcs_across_seeds": 0.8764471064011256,
+      "count_mae": 18.979166666666668,
+      "count_bias": 18.979166666666668
+    },
+    {
+      "dict_mult": 4,
+      "k": 4,
+      "val_fve": 0.9630027530801092,
+      "dead_frac": 0.16015625,
+      "mmcs_across_seeds": 0.8190146535634995,
+      "count_mae": 20.484375,
+      "count_bias": 20.484375
+    }
+  ],
+  "corr_fve_vs_count_mae": -0.20146183764826378
+}

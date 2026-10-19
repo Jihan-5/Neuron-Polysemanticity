@@ -45,6 +45,11 @@ Procedure (all steps use only :class:`~polyid.data.ObservedData`)
    sure-visible factors and group minima; ``U_j`` sums everything that is not
    surely excluded plus group maxima. ``alpha`` is split across steps 3–6 by
    a union bound.
+8. **Misfit gate.** The pairwise residual-dependence statistics are pooled into
+   an approximate global chi-square test of joint diagonalisability. On
+   rejection (``misfit_alpha``, default 1e-3) ISMB abstains to the declared
+   trivial range ``[0, k_max]`` (added after the E5 toy pilot, where every
+   trained model was overcomplete and narrow intervals undercovered).
 
 What the coverage argument needs (stated, not hidden)
 -----------------------------------------------------
@@ -95,6 +100,8 @@ class ISMBConfig:
     selection: str = "gms"  # "gms": generalised moment selection of near-threshold loadings; "none"
     gms_kappa: float | None = None  # default sqrt(log(min_e n_e))
     abstain_width: int = 1
+    misfit_gate: bool = True  # abstain to [0, k_max] when the declared model is globally rejected
+    misfit_alpha: float = 1e-3
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "ISMBConfig":
@@ -272,6 +279,21 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
         group_modes.append(mode)
     upper = np.minimum(upper, len(sure) + len(ambiguous))
 
+    # ------------------------------------------------- global misfit gate (plan p.7 "Diagnose")
+    # Pool the pairwise residual-dependence statistics into one approximate chi-square test of
+    # "the stack is jointly diagonalisable up to sampling error". Rejection means the declared
+    # model (square, uncorrelated latents, stationary noise) does not describe these data, so
+    # a narrow interval would be a statement under a false model: abstain to the declared
+    # trivial range [0, k_max] instead ("bad fit is evidence against assumptions").
+    W = float(sum(t.dependence_stat for t in tests))
+    W_dof = int(sum(t.dependence_dof for t in tests)) if tests and E >= 4 else 0
+    misfit_p = float(stats.chi2.sf(W, W_dof)) if W_dof > 0 else 1.0
+    misfit_rejected = bool(cfg.misfit_gate and misfit_p < cfg.misfit_alpha)
+    if misfit_rejected:
+        k_max = int(spec.k_max or d)
+        lower = np.zeros(d, dtype=int)
+        upper = np.full(d, k_max, dtype=int)
+
     # ---------------------------------------------------------------- point estimate
     point_vis = vis >= v_min
     naive_point = multiplicity(A_n, tau, visible=point_vis, normalize=False)
@@ -303,6 +325,10 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
         "n_span_groups": int(sum(m == "span" for m in group_modes)),
         "n_dependence_flags": len(span_edges),
         "loading_crit_median": float(np.nanmedian(crit)) if singletons else float("nan"),
+        "misfit_stat": W,
+        "misfit_dof": W_dof,
+        "misfit_p": misfit_p,
+        "misfit_rejected": misfit_rejected,
         "alpha": cfg.alpha,
     }
     return ISMBFit(

@@ -194,9 +194,19 @@ def section_e10() -> str:
     if not (p / "e10_summary.csv").exists():
         return ""
     df = pd.read_csv(p / "e10_summary.csv")
-    return f"""### E10 — adaptive environment selection *(pilot; inference on fresh data)*
+    from polyid.stats import paired_difference
+
+    rows = pd.read_csv(p / "e10_rows.csv.gz").pivot(index="rep", columns="strategy", values="width")
+    diffs = []
+    for b in ("random", "balanced"):
+        r = paired_difference(rows["adaptive"].to_numpy(), rows[b].to_numpy())
+        diffs.append(f"adaptive − {b}: **{r['diff']:.2f}** [{r['lo']:.2f}, {r['hi']:.2f}]")
+    return f"""### E10 — adaptive environment selection *(pilot, {len(rows)} replicates; inference on fresh data)*
 
 {md_table(df, ['strategy', 'width', 'coverage', 'all_covered', 'n_groups'])}
+
+Paired width differences (95 % CI, replicate-level): {'; '.join(diffs)}. Suggestive only: two
+comparisons, and each interval barely excludes 0.
 """
 
 

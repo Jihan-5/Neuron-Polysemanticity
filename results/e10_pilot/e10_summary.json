@@ -1,0 +1,29 @@
+{
+  "summary": [
+    {
+      "strategy": "adaptive",
+      "width": 2.9208333333333334,
+      "coverage": 1.0,
+      "all_covered": 1.0,
+      "n_groups": 0.6666666666666666
+    },
+    {
+      "strategy": "balanced",
+      "width": 3.316666666666667,
+      "coverage": 1.0,
+      "all_covered": 1.0,
+      "n_groups": 0.5333333333333333
+    },
+    {
+      "strategy": "random",
+      "width": 3.425,
+      "coverage": 1.0,
+      "all_covered": 1.0,
+      "n_groups": 1.0
+    }
+  ],
+  "figures": [
+    "results/e10_pilot/e10_adaptive_envs.png"
+  ],
+  "reps": 30
+}

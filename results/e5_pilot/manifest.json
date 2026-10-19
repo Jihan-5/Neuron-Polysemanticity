@@ -1,0 +1,81 @@
+{
+  "experiment": "e5_toy_superposition",
+  "created_utc": "2026-10-19T01:36:51+00:00",
+  "config": {
+    "experiment": "e5_toy_superposition",
+    "seed": 20261018,
+    "spec": {
+      "tau": 0.3,
+      "v_min": 0.002,
+      "max_abs_cos": 0.98
+    },
+    "K": 32,
+    "d": [
+      8,
+      16
+    ],
+    "feature_probs": [
+      0.3,
+      0.1,
+      0.03
+    ],
+    "seeds": 2,
+    "steps": 4000,
+    "importance_decay": 0.9,
+    "n_envs": 6,
+    "rate_mult_low": 0.4,
+    "rate_mult_high": 1.6,
+    "n_per_env": 5000,
+    "r_min": 0.1,
+    "noise_sd": 0.0,
+    "methods": {
+      "jointdiag": {
+        "n_starts": 6
+      },
+      "ismb": {
+        "n_boot": 150
+      },
+      "fastica": {},
+      "gmm_bic": {
+        "k_max": 6,
+        "max_rows": 1500,
+        "n_init": 1
+      },
+      "topk_sae": {
+        "dict_mult": 4,
+        "k": 4,
+        "max_steps": 4000
+      }
+    }
+  },
+  "config_hash": "fcd3b28af0c6ea38",
+  "git": {
+    "commit": "85ed26264eeb21b34e37aab2b73ba14679ac1d2a",
+    "dirty": true
+  },
+  "versions": {
+    "python": "3.13.16",
+    "platform": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "sklearn": "1.9.1",
+    "pandas": "3.0.6",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.20.1",
+    "datasets": null
+  },
+  "seeds": {
+    "root": 20261018
+  },
+  "argv": [
+    ".venv/bin/polyid",
+    "run",
+    "configs/toy/e5_toy_superposition.yaml",
+    "--out",
+    "results/e5_pilot",
+    "seeds=2",
+    "steps=4000",
+    "methods.gmm_bic.max_rows=1500",
+    "methods.gmm_bic.n_init=1"
+  ]
+}

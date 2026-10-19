@@ -115,3 +115,12 @@ def test_cumulant_repair_resolves_collinear_profiles(spec):
     res = build_estimator("jointdiag_cum").fit(ds.observed, spec, np.random.default_rng(0))
     assert amari_distance(np.linalg.inv(res.loadings), ds.oracle.A) < 0.05
     assert np.mean(np.abs(res.point - ds.oracle.truth)) < 0.2
+
+
+def test_misfit_gate_abstains_when_overcomplete_but_not_when_clean(spec):
+    over = generate(PlantedConfig(K=24, max_cond=1e9, n_per_env=5000), SeedBank(51).child("over"), v_min=spec.v_min)
+    f = fit_ismb(over.observed, spec, ISMBConfig(n_boot=20), np.random.default_rng(0))
+    assert f.diagnostics["misfit_rejected"] and np.all(f.lower == 0) and np.all(f.upper == over.observed.d)
+    clean = generate(PlantedConfig(n_per_env=5000), SeedBank(51).child("clean"), v_min=spec.v_min)
+    g = fit_ismb(clean.observed, spec, ISMBConfig(n_boot=20), np.random.default_rng(0))
+    assert not g.diagnostics["misfit_rejected"]
