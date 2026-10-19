@@ -96,3 +96,18 @@ and which earlier outputs are void.
   latents are not diagonal, so the misfit may become *detectable*, which is worth testing),
   heavy-tailed or non-Gaussian noise (noise cumulants do not vanish), and an interval version
   (cumulant-aware pair tests inside ISMB).
+
+### 10. E2 pilot (`d = 16`): validity holds, naive intervals collapse, labels fixed
+* **ISMB** covered the truth in all 19 stress conditions (coverage 1.00, zero confidently
+  wrong). Its width tracks difficulty: 2.8 with 8 environments, 7.1 clean, 15–16 under weak
+  diversity, 3 environments, overcompleteness or heteroscedastic noise. It is valid and honest,
+  but at `n = 5000` it is not informative enough.
+* **The naive bootstrap fails at `d = 16`** where it had not at `d = 3`: coverage 0.06 (weak
+  diversity), 0.22 (3 environments), 0.56 (heteroscedastic noise). The sensitivity range is
+  confidently wrong 5–74 % of the time.
+* **Label fix.** The oracle had labelled `overcomplete_24` "identified" (it only checked profile
+  collinearity). Proposition 1 needs `K_visible ≤ d`, so overcomplete designs are now
+  "misspecified" (M5) with the trivial range. The pilot's population labels for that condition
+  were recomputed deterministically from the same seed paths; no estimator output changed.
+* **Partial co-occurrence is undetectable too** when rates are shared: see the corollary in
+  THEORY §5.

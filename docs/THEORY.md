@@ -165,6 +165,14 @@ non-negative, because both diagonals are those of PSD matrices and $\alpha_e,\be
 gives a model with uncorrelated latents and the same covariances in every environment, hence
 the same $D_e$. ∎
 
+**Corollary (exchangeable dependence).** The proof uses only that every block covariance lies in
+the span of two fixed matrices, one of them positive definite. That holds for *any* exchangeable
+dependence within the block. If the members share activity rates and magnitude laws, then
+$\operatorname{Cov}(z_G^{(e)}) = a_e I + b_e \mathbf 1\mathbf 1^\top$ for any switch copula. Partial
+co-occurrence with shared rates is therefore also second-moment-undetectable. The E2 pilot's
+`cooccurrence_partial` condition (copula 0.5, shared rates) confirms it: the infinite-sample
+procedure fits exactly and misses the truth.
+
 **Consequences.** Perfect co-occurrence is not "detectably misspecified": it is
 *observationally equivalent* to a clean independent model with different loadings. A
 second-moment procedure can return a narrow, confidently wrong answer here. This holds for

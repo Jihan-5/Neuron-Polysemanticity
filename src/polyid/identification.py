@@ -10,8 +10,8 @@ model:
 
 * **identified** — the identified set is a single integer;
 * **partial** — the set is an interval of width >= 1 (structural ambiguity);
-* **misspecified** — the declared independent-factor model is false for this
-  data-generating process (latents dependent or noise non-stationary).
+* **misspecified** — the declared model is false for this data-generating process
+  (latents dependent, noise non-stationary, or more visible factors than neurons).
   Two sub-cases are recorded: *detectable* (no independent-factor model fits
   the population moments) and *undetectable* (another independent-factor
   model with different loadings fits them exactly, e.g. a co-occurring pair —
@@ -63,7 +63,8 @@ def identified_set(oracle: Oracle, spec: EstimandSpec, collinear_tol: float = 1e
     A, prof, vis = oracle.A, oracle.profiles, oracle.visible
     K = A.shape[1]
     truth = multiplicity(A, tau, visible=vis)
-    misspecified = (not oracle.independent) or (not oracle.noise_stationary)
+    overcomplete = int(np.sum(oracle.visible)) > A.shape[0]  # M5: Proposition 1 needs K_visible <= d
+    misspecified = (not oracle.independent) or (not oracle.noise_stationary) or overcomplete
 
     # exact groups from the true profiles (visible factors only)
     G = profile_abs_cosines(prof)
@@ -115,6 +116,10 @@ def identified_set(oracle: Oracle, spec: EstimandSpec, collinear_tol: float = 1e
     if misspecified:
         detectable = bool(proc["misfit"])
 
+    if overcomplete:
+        # outside the square model: no identified set is defined; report the trivial range
+        lower = np.zeros_like(lower)
+        upper = np.full_like(upper, int(np.sum(vis)))
     status = np.where(upper > lower, "partial", "identified").astype(object)
     if misspecified:
         status[:] = "misspecified"

@@ -125,10 +125,14 @@ profiles) is measured in E2/E4 rather than assumed away.
    perfect co-occurrence, non-stationary or heavy-tailed noise, overcompleteness. This is a
    point estimator with established prior art (JADE; Hyvärinen 2001; Tichavský et al.), so
    it is not a novelty claim. Turning it into an ISMB-style bound is the next step.
-6. **Honest negative:** in the `d = 3` pilot the *naive* bootstrap also covered, because its
-   replicates drift across the unidentified rotation. These pilots do **not** yet show an ISMB
-   advantage over it. Where ISMB differs is that it *has* a coverage argument and reports the
-   structure (which factors are merged, and why).
+6. **Where naive uncertainty breaks (E2, `d = 16`).** Across 19 stress conditions ISMB covered
+   the truth every time (zero confidently wrong), widening exactly where identification
+   weakens. The naive bootstrap's coverage collapsed to 0.06 under weak diversity, 0.22 with
+   3 environments and 0.56 under heteroscedastic noise. The sensitivity range was confidently
+   wrong up to 74 % of the time.
+7. **Honest negative:** in the `d = 3` pilot (E4) the naive bootstrap *also* covered, because
+   its replicates drift across the unidentified rotation. An advantage of ISMB appears only in
+   the larger `d = 16` designs.
 
 <!-- RESULTS:START -->
 ### E0: theory gate (full run, 40 replicates × 7 sample sizes × 2 cases)

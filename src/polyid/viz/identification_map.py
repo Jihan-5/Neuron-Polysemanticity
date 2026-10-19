@@ -66,7 +66,7 @@ def identification_map(rows: pd.DataFrame, method: str, y: str, facet: str | Non
             ax.set_title(f"{facet} = {fv}", fontsize=10)
     axes[0][-1].legend(loc="center left", bbox_to_anchor=(1.0, 0.5))
     if title:
-        fig.suptitle(title, fontsize=11, fontweight="bold", x=0.02, ha="left", y=1.06)
+        fig.suptitle(title, fontsize=11, fontweight="bold", x=0.02, ha="left", y=1 + 0.3 / fig.get_figheight())
     out_path = Path(out_path)
     style.finish(fig, out_path)
     return out_path

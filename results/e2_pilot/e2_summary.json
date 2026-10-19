@@ -1,0 +1,241 @@
+{
+  "conditions": [
+    "clean",
+    "weak_diversity",
+    "collinear_pair",
+    "collinear_triple",
+    "near_duplicate_columns",
+    "loadings_near_tau",
+    "invisible_factors",
+    "unknown_K_8",
+    "cooccurrence_partial",
+    "cooccurrence_perfect",
+    "coupled_magnitudes",
+    "noise_correlated_stationary",
+    "noise_env_scaled",
+    "noise_env_heteroscedastic",
+    "noise_student_t",
+    "few_envs_3",
+    "few_envs_4",
+    "many_envs_8",
+    "overcomplete_24"
+  ],
+  "reps": 10,
+  "figures": [
+    "results/e2_pilot/e2_stress_intervals.png",
+    "results/e2_pilot/e2_identification_map_ismb.png",
+    "results/e2_pilot/e2_identification_map_boot_percentile.png",
+    "results/e2_pilot/e2_identification_map_jointdiag.png"
+  ],
+  "population": [
+    {
+      "condition": "clean",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "collinear_pair",
+      "id_frac_identified": 0.7544642857142857,
+      "id_frac_partial": 0.24553571428571427,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.24553571428571427,
+      "id_n_groups": 1.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "collinear_triple",
+      "id_frac_identified": 0.6071428571428571,
+      "id_frac_partial": 0.39285714285714285,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.7857142857142857,
+      "id_n_groups": 1.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "cooccurrence_partial",
+      "id_frac_identified": 0.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 1.0,
+      "id_mean_width": 0.6160714285714286,
+      "id_n_groups": 1.0,
+      "id_misspecified": 1.0,
+      "id_misfit_detectable": false,
+      "id_procedure_covers_truth": 0.0
+    },
+    {
+      "condition": "cooccurrence_perfect",
+      "id_frac_identified": 0.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 1.0,
+      "id_mean_width": 0.5178571428571429,
+      "id_n_groups": 1.0,
+      "id_misspecified": 1.0,
+      "id_misfit_detectable": false,
+      "id_procedure_covers_truth": 0.7857142857142857
+    },
+    {
+      "condition": "coupled_magnitudes",
+      "id_frac_identified": 0.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 1.0,
+      "id_mean_width": 0.6071428571428571,
+      "id_n_groups": 1.0,
+      "id_misspecified": 1.0,
+      "id_misfit_detectable": true,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "few_envs_3",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "few_envs_4",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "invisible_factors",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "loadings_near_tau",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "many_envs_8",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "near_duplicate_columns",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "noise_correlated_stationary",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "noise_env_heteroscedastic",
+      "id_frac_identified": 0.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 1.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 1.0,
+      "id_misfit_detectable": true,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "noise_env_scaled",
+      "id_frac_identified": 0.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 1.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 1.0,
+      "id_misfit_detectable": true,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "noise_student_t",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "overcomplete_24",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "unknown_K_8",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    },
+    {
+      "condition": "weak_diversity",
+      "id_frac_identified": 1.0,
+      "id_frac_partial": 0.0,
+      "id_frac_misspecified": 0.0,
+      "id_mean_width": 0.0,
+      "id_n_groups": 0.0,
+      "id_misspecified": 0.0,
+      "id_misfit_detectable": null,
+      "id_procedure_covers_truth": 1.0
+    }
+  ]
+}
