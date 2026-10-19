@@ -1,0 +1,21 @@
+# environments
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# large experiment artefacts (summaries under results/*/summary* are tracked)
+results/**/raw/
+results/**/*.npy
+results/**/*.npz
+results/**/*.pt
+results/**/cache/
+activation_cache/
+hf_cache/
+*.memmap
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

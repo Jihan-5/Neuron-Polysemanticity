@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "polyid"
+version = "0.1.0"
+description = "How many features does a neuron mix? Partial identification of thresholded feature multiplicity under co-occurrence and distribution shift."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Jihan Mankani" }]
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "scikit-learn>=1.4",
+    "pandas>=2.1",
+    "matplotlib>=3.8",
+    "pyyaml>=6.0",
+    "joblib>=1.3",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+torch = ["torch>=2.2"]
+lm = ["torch>=2.2", "transformers>=4.40", "datasets>=2.18"]
+dev = ["pytest>=8.0"]
+all = ["torch>=2.2", "transformers>=4.40", "datasets>=2.18", "pytest>=8.0"]
+
+[project.scripts]
+polyid = "polyid.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "slow: long-running statistical tests (deselect with -m 'not slow')",
+    "torch: requires PyTorch",
+    "lm: requires transformers (uses a randomly initialised tiny GPT-NeoX, no download)",
+]
