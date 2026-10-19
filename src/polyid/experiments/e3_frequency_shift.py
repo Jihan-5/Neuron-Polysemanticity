@@ -41,7 +41,7 @@ def _rep(rep: int, cfg: dict, methods: dict, spec) -> list[dict]:
         pc = PlantedConfig.from_dict({**cfg["generator"], "rate_center": center})
         rates = sample_rates_with_margin(pc, bank.child("corpus", c, "rates").rng())
         ds = generate(pc, bank.child("corpus", c), A=A, rates=rates, v_min=spec.v_min)
-        truth = ds.oracle.truth
+        truth = ds.oracle.truth_at(spec.tau)
         for name, mcfg in methods.items():
             res = build_estimator(name, mcfg).fit(ds.observed, spec, bank.child("corpus", c, name).rng())
             for j in range(len(truth)):

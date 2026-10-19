@@ -100,7 +100,7 @@ def _rep(case: str, gen: dict, A, rates, n: int, rep: int, seed: int, spec: Esti
     pc = PlantedConfig.from_dict({**gen, "n_per_env": n})
     bank = SeedBank(seed).child("e0", case, n, "test", rep)
     ds = generate(pc, bank, A=A, rates=rates, v_min=spec.v_min)
-    truth = ds.oracle.truth
+    truth = ds.oracle.truth_at(spec.tau)
     rows = []
     rng = bank.child("methods").rng()
     jd = JointDiagCount({"n_starts": 6}).fit(ds.observed, spec, rng)

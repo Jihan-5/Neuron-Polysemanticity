@@ -68,7 +68,7 @@ def _one_dataset(exp: str, cond_id: str, gen_cfg: dict, methods: dict, spec: Est
     ds_row = {"experiment": exp, "condition": cond_id, "split": split, "rep": rep,
               "dataset": f"{cond_id}#{split}{rep}", "diversity": ds.oracle.diversity,
               "independent": ds.oracle.independent, "noise_stationary": ds.oracle.noise_stationary,
-              "truth_mean": float(ds.oracle.truth.mean()), **{f"id_{k}": v for k, v in ident.summary().items()}}
+              "truth_mean": float(ds.oracle.truth_at(spec.tau).mean()), **{f"id_{k}": v for k, v in ident.summary().items()}}
     for name, mcfg in methods.items():
         t0 = time.time()
         try:
@@ -83,10 +83,10 @@ def _one_dataset(exp: str, cond_id: str, gen_cfg: dict, methods: dict, spec: Est
             if isinstance(val, (int, float, bool, np.integer, np.floating)):
                 ds_row[f"{name}__{key}"] = val
         ids = {"experiment": exp, "condition": cond_id, "split": split, "rep": rep, "dataset": ds_row["dataset"]}
-        out["rows"].extend(score_result(res, ds.oracle.truth, spec=spec, A_true=ds.oracle.A,
+        out["rows"].extend(score_result(res, ds.oracle.truth_at(spec.tau), spec=spec, A_true=ds.oracle.A,
                                         visible_true=ds.oracle.visible, idset=(ident.lower, ident.upper), ids=ids))
         if res.kind == "score" or (res.score is not None and res.kind == "count"):
-            out["scores"].append({"method": name, "score": res.score, "truth": ds.oracle.truth, **ids})
+            out["scores"].append({"method": name, "score": res.score, "truth": ds.oracle.truth_at(spec.tau), **ids})
         # threshold sensitivity for count methods with loadings
         if res.loadings is not None and res.point is not None and res.kind == "count":
             for t in taus:

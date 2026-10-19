@@ -143,7 +143,7 @@ class Oracle:
     variances: np.ndarray  # E x K diag(latent_cov)
     profiles: np.ndarray  # K x E centred variance profiles
     visible: np.ndarray  # K bool
-    truth: np.ndarray  # d int, P_j(tau) at the generator's tau
+    truth: np.ndarray  # d int, P_j(tau) at the *generator's* tau; score with truth_at(spec.tau)
     tau: float
     v_min: float
     independent: bool  # latent covariances diagonal in every environment

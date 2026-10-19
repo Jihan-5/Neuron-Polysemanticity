@@ -32,7 +32,7 @@ def _dataset(rep: int, cfg: dict, spec) -> list[dict]:
     X = np.array(ds.observed.X, copy=True)
     for e in range(ds.observed.n_envs):
         X[ds.observed.env == e] -= X[ds.observed.env == e].mean(0)
-    truth = ds.oracle.truth
+    truth = ds.oracle.truth_at(spec.tau)
     rows = []
     for mult, k in itertools.product(cfg["dict_mults"], cfg["ks"]):
         fits = []

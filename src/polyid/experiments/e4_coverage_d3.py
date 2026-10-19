@@ -71,7 +71,7 @@ def _rep(cond: str, gen: dict, n: int, rep: int, cfg: dict, methods: dict, spec)
         if res.kind == "count":  # treat a point estimate as a singleton interval
             res.lower, res.upper, res.kind = res.point.copy(), res.point.copy(), "interval"
         ids = {"condition": cond, "n": n, "rep": rep, "dataset": f"{cond}|{n}#{rep}"}
-        rows += score_result(res, ds.oracle.truth, spec=spec, A_true=A, visible_true=ds.oracle.visible,
+        rows += score_result(res, ds.oracle.truth_at(spec.tau), spec=spec, A_true=A, visible_true=ds.oracle.visible,
                              idset=(ident.lower, ident.upper), ids=ids)
         if name == "ar_grid":
             info["ar_empty"] = res.diagnostics["empty"]

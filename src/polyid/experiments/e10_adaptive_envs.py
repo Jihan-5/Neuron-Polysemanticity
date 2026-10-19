@@ -120,7 +120,7 @@ def _rep(rep: int, cfg: dict, spec) -> list[dict]:
         inf_cfg = PlantedConfig.from_dict({**gen, "n_envs": E0 + budget, "n_per_env": n, "min_visibility": 0.0})
         ds = generate(inf_cfg, bank.child("inference", strategy), A=A, rates=rates, v_min=spec.v_min)
         f = fit_ismb(ds.observed, spec, ISMBConfig(n_boot=int(cfg.get("n_boot", 150))), bank.child("fit", strategy).rng())
-        truth = ds.oracle.truth
+        truth = ds.oracle.truth_at(spec.tau)
         covered = (f.lower <= truth) & (truth <= f.upper)
         rows.append({"rep": rep, "strategy": strategy, "picks": str(picks), "width": float(np.mean(f.upper - f.lower)),
                      "coverage": float(np.mean(covered)), "all_covered": float(np.all(covered)),

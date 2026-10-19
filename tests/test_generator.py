@@ -88,3 +88,13 @@ def test_two_explanations_equivalence_helper():
 def test_overcomplete_generation():
     ds = generate(PlantedConfig(K=24, max_cond=1e9), SeedBank(13))
     assert ds.oracle.A.shape == (16, 24)
+
+
+def test_truth_at_uses_the_requested_threshold():
+    """Regression: scoring must use spec.tau, not the generator's own tau field."""
+    from polyid.estimand import multiplicity
+
+    ds = generate(PlantedConfig(d=6, K=6), SeedBank(14))
+    for t in (0.05, 0.1, 0.3, 0.6):
+        assert np.array_equal(ds.oracle.truth_at(t), multiplicity(ds.oracle.A, t, visible=ds.oracle.visible))
+    assert not np.array_equal(ds.oracle.truth_at(0.1), ds.oracle.truth_at(0.6))

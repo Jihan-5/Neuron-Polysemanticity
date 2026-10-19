@@ -6,6 +6,7 @@ entry_margin: 0.05
 reps: 500              # plan: "500 independent small simulated datasets"
 ns: [1000, 4000, 16000]
 generator:
+  tau: 0.30            # must equal spec.tau (margin rules use it); scoring uses spec.tau regardless
   d: 3
   K: 3
   n_envs: 4
