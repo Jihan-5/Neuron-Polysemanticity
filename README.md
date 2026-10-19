@@ -6,7 +6,7 @@
 
 <p>
 <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-2a78d6">
-<img alt="tests" src="https://img.shields.io/badge/tests-105%20passing-0ca30c">
+<img alt="tests" src="https://img.shields.io/badge/tests-107%20passing-0ca30c">
 <img alt="status" src="https://img.shields.io/badge/status-research%20code%20%C2%B7%20pilots%20only-eda100">
 <img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-E0%20met%20%C2%B7%20E4%20pilot-6250d6">
 </p>
@@ -107,56 +107,273 @@ profiles) is measured in E2/E4 rather than assumed away.
 
 1. **Non-identification is real and constructible (E0, full run).** Two loading matrices with
    identical covariances in every environment (difference 5.6 × 10⁻¹⁷) give different
-   multiplicities. When the target is identified, ISMB's width shrinks to 0. When it is not,
-   the width converges to the identified-set width and coverage stays at 1.0.
+   multiplicities. When the target is identified, ISMB's width shrinks to 0. When it is not, the
+   width converges to the identified-set width with coverage 1.0.
 2. **Point estimates are confidently wrong under non-identification, and more data does not
-   fix it (E4).** Joint-diagonalisation singletons are wrong 21–30 % of the time in the
-   collinear cell at every `n`, and 34–41 % under weak diversity. ISMB covers the truth 96–100 %
-   in those cells with ≤ 3.7 % confidently wrong.
-3. **Perfect co-occurrence defeats every second-moment method (Proposition 2, E4).** ISMB's
-   coverage there *falls* with `n` (0.97 → 0.83), exactly as the theory predicts. This is an
-   impossibility result, not a tuning problem.
-4. **ISMB is not yet informative at `d = 16` (E1).** It stays valid (coverage 1.0), but mean
-   width is 4.7–14.7 in well-separated cells and ≈ 16 in near-collinear ones. Second moments
-   alone are weak at `d = 16, E = 6`, even though population recovery is exact (lab notebook §8).
-5. **Repair: adding fourth-order cumulant slices to the joint-diagonalisation stack** cut count
-   MAE from 2.22 (second moments) and 0.61 (FastICA) to **0.016** across the 12 cells at
-   `n = 5000`, and to ≈ 0 in 13 of 19 stress conditions. It degrades where its assumptions fail:
-   perfect co-occurrence, non-stationary or heavy-tailed noise, overcompleteness. This is a
-   point estimator with established prior art (JADE; Hyvärinen 2001; Tichavský et al.), so
-   it is not a novelty claim. Turning it into an ISMB-style bound is the next step.
-6. **Where naive uncertainty breaks (E2, `d = 16`).** Across 19 stress conditions ISMB covered
-   the truth every time (zero confidently wrong), widening exactly where identification
-   weakens. The naive bootstrap's coverage collapsed to 0.06 under weak diversity, 0.22 with
-   3 environments and 0.56 under heteroscedastic noise. The sensitivity range was confidently
-   wrong up to 74 % of the time.
-7. **Honest negative:** in the `d = 3` pilot (E4) the naive bootstrap *also* covered, because
-   its replicates drift across the unidentified rotation. An advantage of ISMB appears only in
-   the larger `d = 16` designs.
+   fix it (E4, `d = 3`).** Joint-diagonalisation singletons are wrong 21–30 % of the time in
+   the collinear cell at every `n`, and 34–41 % under weak diversity. ISMB covers the truth
+   96–100 % in those cells with ≤ 3.7 % confidently wrong.
+3. **Perfect, or exchangeable partial, co-occurrence defeats every second-moment method
+   (Proposition 2 and its corollary).** In E4, ISMB coverage there *falls* with `n` (0.97 → 0.83),
+   exactly as the theory predicts. This is an impossibility result, not a tuning problem.
+4. **At `d = 16`, ISMB is valid where naive uncertainty collapses, but it is not yet
+   informative (E1, E2).** Across 19 stress conditions ISMB covered the truth every time with
+   zero confidently wrong, widening where identification weakens (2.8 with 8 environments, about
+   16 under weak diversity or misspecification). The naive bootstrap's coverage fell to 0.06
+   (weak diversity), 0.22 (3 environments) and 0.56 (heteroscedastic noise). ISMB's mean width
+   on the 24-cell grid is 13 of 16, which is honest but not yet useful.
+5. **Repair: fourth-order cumulant slices.** Adding them to the joint-diagonalisation stack
+   (`jointdiag_cum`) gives count MAE **0.030** on the 24-cell grid (exact 97 %, support F1
+   0.99), versus 0.63 for FastICA and 2.71 for second moments alone. It is ≈ 0 in 13 of 19
+   stress conditions and the most stable under frequency shift (0.3 % of neurons change vs 33 %
+   for second moments; E3). It degrades where its assumptions fail: co-occurrence,
+   non-stationary or heavy-tailed noise, overcompleteness. It is a point estimator with
+   established prior art (JADE; Hyvärinen 2001; Tichavský et al.). The interval version is the
+   next step.
+6. **Misfit gate.** Added after the first E5 pilot; all pilots were then re-run. It abstains
+   whenever the declared model is rejected: 100 % for overcomplete and non-stationary-noise
+   designs, 0 % for correctly specified ones, and 10–20 % false abstentions under
+   correlated-stationary or Student-t noise.
+7. **Open failure: learned overcomplete geometry (E5).** Every trained toy model represents
+   more features than dimensions. The gate catches some (d = 8, p ≤ 0.1) but misses the others,
+   where ISMB undercovers (0.31 at `d = 8` dense; 0.78–0.94 at `d = 16`). This matters most for
+   real language models.
+8. **SAE counts are not multiplicity (E6).** TopK-SAE decoder counts over-count by 7–24
+   features per neuron, worse with larger dictionaries, even at 0.96 FVE.
+9. **Adaptive environment choice helps a little (E10).** Width −0.5 [−0.98, −0.03] vs random,
+   at full coverage. Suggestive only.
 
 <!-- RESULTS:START -->
-### E0: theory gate (full run, 40 replicates × 7 sample sizes × 2 cases)
+### E0 — theory gate *(full run: 40 replicates × 7 sample sizes × 2 cases)*
 
-**Constructive non-identification.** In a 4-neuron model where factors 0 and 1 share an
-activity profile, two explanations have identical population covariances in all six
-environments (max |difference| = **5.6 × 10⁻¹⁷**). Yet they give $P = (1,2,3,1)$ and
-$P = (1,3,4,1)$.
+**Constructive non-identification.** Two explanations of the same 4-neuron model have
+identical population covariances in all six environments (max |difference| =
+**5.6e-17**) but multiplicities
+`(1, 2, 3, 1)` vs `(1, 3, 4, 1)`.
 
-| n per env | identifiable: joint-diag MAE | identifiable: ISMB width | not identified: joint-diag MAE | not identified: ISMB width | ISMB coverage (both cases) |
-|---:|---:|---:|---:|---:|---:|
+| n / env | identifiable: joint-diag MAE | identifiable: ISMB width | not identified: joint-diag MAE | not identified: ISMB width | ISMB coverage (min of cases) |
+|---|---|---|---|---|---|
 | 500 | 0.51 | 3.49 | 0.44 | 2.63 | 1.00 |
-| 2 000 | 0.03 | 1.96 | 0.37 | 1.07 | 1.00 |
-| 5 000 | 0.00 | 0.33 | 0.33 | 0.53 | 1.00 |
-| 50 000 | 0.00 | 0.00 | 0.35 | **0.50 = identified-set width** | 1.00 |
+| 1000 | 0.24 | 3.01 | 0.41 | 1.62 | 1.00 |
+| 2000 | 0.03 | 1.96 | 0.37 | 1.07 | 1.00 |
+| 5000 | 0.00 | 0.33 | 0.33 | 0.53 | 1.00 |
+| 10000 | 0.00 | 0.12 | 0.34 | 0.59 | 1.00 |
+| 20000 | 0.00 | 0.00 | 0.39 | 0.50 | 1.00 |
+| 50000 | 0.00 | 0.00 | 0.35 | 0.50 | 1.00 |
 
-When the target is identified, error and width go to zero. When it is not, the point error
-stays flat and ISMB's width converges to **exactly** the identified-set width, without
-narrowing onto a wrong singleton.
+Identified target → error and width go to 0. Not identified → the point error stays flat and the
+ISMB width converges to the identified-set width (**0.50**) instead of collapsing onto a
+wrong singleton.
 
-<p align="center">
-<img src="results/e0_theory_gate/e0_width_vs_n.png" width="88%"><br>
-<img src="results/e0_theory_gate/e0_amari_vs_n.png" width="44%">
-</p>
+<p align="center"><img src="results/e0_theory_gate/e0_width_vs_n.png" width="88%"><br>
+<img src="results/e0_theory_gate/e0_amari_vs_n.png" width="44%"></p>
+
+### E4 — coverage in the certified d = 3 problem *(pilot: 100 replicates per cell; 500 planned)*
+
+| condition | method | coverage of true P_j (n=16000) [95% CI] | covers identified set | mean width | confidently wrong |
+|---|---|---|---|---|---|
+| collinear_pair | jointdiag | 0.71 [0.65, 0.78] | 0.05 | 0.00 | 0.29 |
+| collinear_pair | sensitivity | 0.71 [0.65, 0.78] | 0.05 | 0.00 | 0.29 |
+| collinear_pair | boot_percentile | 1.00 [1.00, 1.00] | 0.93 | 0.94 | 0.00 |
+| collinear_pair | ismb | 0.96 [0.93, 0.99] | 0.95 | 1.15 | 0.04 |
+| collinear_pair | ar_grid | 1.00 [1.00, 1.00] | 0.21 | 0.28 | 0.00 |
+| cooccurrence_perfect | jointdiag | 0.55 [0.49, 0.62] | 0.07 | 0.00 | 0.45 |
+| cooccurrence_perfect | sensitivity | 0.55 [0.49, 0.62] | 0.07 | 0.00 | 0.45 |
+| cooccurrence_perfect | boot_percentile | 0.88 [0.84, 0.91] | 0.11 | 0.93 | 0.01 |
+| cooccurrence_perfect | ismb | 0.83 [0.78, 0.88] | 0.24 | 1.14 | 0.07 |
+| cooccurrence_perfect | ar_grid | 0.96 [0.92, 0.98] | 0.92 | 2.75 | 0.04 |
+| identifiable | jointdiag | 0.98 [0.96, 1.00] | 0.98 | 0.00 | 0.02 |
+| identifiable | sensitivity | 0.98 [0.96, 1.00] | 0.98 | 0.00 | 0.02 |
+| identifiable | boot_percentile | 1.00 [1.00, 1.00] | 1.00 | 0.12 | 0.00 |
+| identifiable | ismb | 0.99 [0.97, 1.00] | 0.99 | 0.24 | 0.01 |
+| identifiable | ar_grid | 1.00 [1.00, 1.00] | 1.00 | 0.22 | 0.00 |
+| weak_diversity | jointdiag | 0.66 [0.60, 0.73] | 0.66 | 0.00 | 0.34 |
+| weak_diversity | sensitivity | 0.66 [0.60, 0.73] | 0.66 | 0.00 | 0.34 |
+| weak_diversity | boot_percentile | 1.00 [1.00, 1.00] | 1.00 | 1.51 | 0.00 |
+| weak_diversity | ismb | 0.99 [0.97, 1.00] | 0.99 | 2.04 | 0.00 |
+| weak_diversity | ar_grid | 0.99 [0.97, 1.00] | 0.99 | 0.90 | 0.01 |
+
+AR-grid empty-set rate by condition: collinear_pair: 0.03, cooccurrence_perfect: 0.56, identifiable: 0.05, weak_diversity: 0.01. Full tables (all `n`) are in
+`results/e4_coverage_d3_pilot/e4_summary.csv`.
+
+<p align="center"><img src="results/e4_coverage_d3_pilot/e4_coverage_width_d3.png" width="96%"></p>
+<p align="center"><img src="results/e4_coverage_d3_pilot/e4_identification_map_ismb.png" width="70%"></p>
+
+### E1 — 24-setting planted grid *(pilot: 6 test datasets per cell; 500 planned)*
+
+Equal weight over the 24 cells (`d = K = 16`, `E = 6`, `τ = 0.10`). Score-only methods enter the
+count columns only through development-split calibration (`+devcal`).
+
+| method | mae | bias | exact | coverage | covers_idset | width_mean | confidently_wrong | spearman | auroc_poly | support_f1 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| jointdiag_cum | 0.03 | 0.02 | 0.97 | – | – | – | – | – | – | 0.99 |
+| dpmi_style+devcal | 0.60 | 0.01 | 0.49 | – | – | – | – | – | – | – |
+| fastica | 0.63 | 0.62 | 0.65 | – | – | – | – | – | – | 0.90 |
+| gmm_bic+devcal | 0.76 | 0.03 | 0.37 | – | – | – | – | – | – | – |
+| gmm_bic | 0.80 | -0.17 | 0.42 | – | – | – | – | 0.51 | 0.85 | – |
+| moments+devcal | 0.90 | 0.05 | 0.32 | – | – | – | – | – | – | – |
+| factor_analysis | 1.21 | 0.42 | 0.27 | – | – | – | – | – | – | 0.44 |
+| jointdiag | 2.71 | 2.71 | 0.32 | – | – | – | – | – | – | 0.69 |
+| boot_percentile | 2.71 | 2.71 | 0.32 | 0.50 | 0.50 | 4.85 | 0.00 | – | – | 0.69 |
+| sensitivity | 2.71 | 2.71 | 0.32 | 0.33 | 0.33 | 0.27 | 0.52 | – | – | – |
+| ismb | 3.44 | 3.43 | 0.22 | 1.00 | 1.00 | 13.27 | 0.00 | – | – | 0.69 |
+| dict_learning | 5.12 | 5.11 | 0.05 | – | – | – | – | – | – | 0.46 |
+| pca | 6.09 | 6.09 | 0.03 | – | – | – | – | – | – | 0.38 |
+| dpmi_style | – | – | – | – | – | – | – | 0.61 | 0.89 | – |
+| moments | – | – | – | – | – | – | – | -0.46 | 0.25 | – |
+
+<p align="center"><img src="results/e1_pilot/e1_mae_vs_n.png" width="96%"></p>
+
+### Repair — adding fourth-order cumulant slices *(pilots, point estimates; exploratory)*
+
+Same 12 E1 cells at `n = 5000` (6 datasets each), equal-weight average:
+
+| method | mae | bias | exact | support_f1 |
+|---|---|---|---|---|
+| jointdiag_cum | 0.016 | 0.001 | 0.984 | 0.990 |
+| fastica | 0.605 | 0.605 | 0.655 | 0.897 |
+| jointdiag | 2.217 | 2.217 | 0.396 | 0.735 |
+
+Under the E2 stress conditions (10 datasets each), count MAE:
+
+| condition | jointdiag | fastica | jointdiag_cum |
+|---|---|---|---|
+| clean | 0.13 | 0.09 | 0.00 |
+| collinear_pair | 0.35 | 0.04 | 0.00 |
+| collinear_triple | 0.60 | 0.04 | 0.00 |
+| cooccurrence_partial | 0.27 | 0.09 | 0.10 |
+| cooccurrence_perfect | 0.43 | 0.34 | 0.25 |
+| coupled_magnitudes | 0.26 | 0.04 | 0.00 |
+| few_envs_3 | 3.17 | 0.01 | 0.00 |
+| few_envs_4 | 1.38 | 0.07 | 0.00 |
+| invisible_factors | 0.95 | 0.31 | 0.05 |
+| loadings_near_tau | 0.23 | 0.04 | 0.06 |
+| many_envs_8 | 0.05 | 0.00 | 0.00 |
+| near_duplicate_columns | 0.10 | 0.03 | 0.00 |
+| noise_correlated_stationary | 0.41 | 0.23 | 0.01 |
+| noise_env_heteroscedastic | 1.78 | 0.24 | 0.26 |
+| noise_env_scaled | 1.01 | 0.24 | 0.13 |
+| noise_student_t | 0.61 | 0.37 | 0.20 |
+| overcomplete_24 | 1.68 | 0.86 | 0.73 |
+| unknown_K_8 | 0.57 | 5.31 | 0.00 |
+| weak_diversity | 6.61 | 0.01 | 0.00 |
+
+### E2 — assumption stress *(pilot: 10 datasets per condition)*
+
+| condition | jointdiag MAE | coverage:ismb | coverage:boot_percentile | confidently_wrong:ismb | confidently_wrong:boot_percentile | width_mean:ismb |
+|---|---|---|---|---|---|---|
+| clean | 0.13 | 1.00 | 0.99 | 0.00 | 0.00 | 7.08 |
+| collinear_pair | 0.35 | 1.00 | 0.99 | 0.00 | 0.00 | 6.05 |
+| collinear_triple | 0.60 | 1.00 | 0.92 | 0.00 | 0.00 | 7.97 |
+| cooccurrence_partial | 0.27 | 1.00 | 0.97 | 0.00 | 0.00 | 6.77 |
+| cooccurrence_perfect | 0.43 | 1.00 | 0.96 | 0.00 | 0.00 | 6.63 |
+| coupled_magnitudes | 0.26 | 1.00 | 0.99 | 0.00 | 0.00 | 7.36 |
+| few_envs_3 | 3.17 | 1.00 | 0.23 | 0.00 | 0.00 | 15.97 |
+| few_envs_4 | 1.38 | 1.00 | 0.71 | 0.00 | 0.00 | 14.10 |
+| invisible_factors | 0.95 | 1.00 | 0.80 | 0.00 | 0.00 | 8.78 |
+| loadings_near_tau | 0.23 | 1.00 | 0.99 | 0.00 | 0.01 | 6.17 |
+| many_envs_8 | 0.05 | 1.00 | 1.00 | 0.00 | 0.00 | 2.79 |
+| near_duplicate_columns | 0.10 | 1.00 | 1.00 | 0.00 | 0.00 | 5.58 |
+| noise_correlated_stationary | 0.41 | 1.00 | 0.96 | 0.00 | 0.00 | 9.57 |
+| noise_env_heteroscedastic | 1.78 | 1.00 | 0.56 | 0.00 | 0.01 | 16.00 |
+| noise_env_scaled | 1.01 | 1.00 | 0.77 | 0.00 | 0.00 | 16.00 |
+| noise_student_t | 0.61 | 1.00 | 0.95 | 0.00 | 0.00 | 11.76 |
+| overcomplete_24 | 1.68 | 1.00 | 0.78 | 0.00 | 0.00 | 16.00 |
+| unknown_K_8 | 0.57 | 1.00 | 1.00 | 0.00 | 0.00 | 7.81 |
+| weak_diversity | 6.61 | 1.00 | 0.06 | 0.00 | 0.00 | 15.06 |
+
+<p align="center"><img src="results/e2_pilot/e2_stress_intervals.png" width="96%"></p>
+
+### E3 — frequency shift with fixed loadings *(pilot)*
+
+Same `A`, three corpora with activity rates centred at 0.05 / 0.15 / 0.30; the truth is
+identical across corpora by construction.
+
+| method | frac_neurons_changed | cross_corpus_spearman | mae | coverage |
+|---|---|---|---|---|
+| jointdiag_cum | 0.00 | 1.00 | 0.00 | – |
+| jointdiag | 0.33 | 0.89 | 0.28 | – |
+| ismb | 0.51 | 0.82 | 0.49 | 1.00 |
+| fastica | 0.53 | 0.86 | 0.48 | – |
+| gmm_bic | 0.69 | 0.30 | 0.83 | – |
+| dict_learning | 0.90 | 0.52 | 4.76 | – |
+| dpmi_style | – | 0.55 | – | – |
+| moments | – | 0.18 | – | – |
+
+<p align="center"><img src="results/e3_pilot/e3_frequency_shift_stability.png" width="60%"></p>
+
+### E10 — adaptive environment selection *(pilot, 30 replicates; inference on fresh data)*
+
+| strategy | width | coverage | all_covered | n_groups |
+|---|---|---|---|---|
+| adaptive | 2.92 | 1.00 | 1.00 | 0.67 |
+| balanced | 3.48 | 1.00 | 1.00 | 0.53 |
+| random | 3.51 | 1.00 | 1.00 | 1.00 |
+
+Paired width differences (95 % CI, replicate-level): adaptive − random: **-0.59** [-1.11, -0.07]; adaptive − balanced: **-0.56** [-1.05, -0.07]. Suggestive only: two
+comparisons, and each interval barely excludes 0.
+
+### E5 — trained toy superposition models *(pilot: 2 seeds, 4k steps)*
+
+Represented features per regime (truth from the learned `W`; every model is overcomplete,
+which is outside the square model, so the honest outcome is abstention):
+
+| d | feature_prob | n_represented | n_target | overcomplete | ISMB gate fired |
+|---|---|---|---|---|---|
+| 8 | 0.03 | 24.50 | 23.00 | 1.00 | 0.50 |
+| 8 | 0.10 | 17.50 | 17.50 | 1.00 | 1.00 |
+| 8 | 0.30 | 15.50 | 15.50 | 1.00 | 0.00 |
+| 16 | 0.03 | 32.00 | 30.00 | 1.00 | 0.00 |
+| 16 | 0.10 | 30.50 | 30.00 | 1.00 | 0.00 |
+| 16 | 0.30 | 23.00 | 23.00 | 1.00 | 0.00 |
+
+| d | feature_prob | method | mae | coverage | width_mean |
+|---|---|---|---|---|---|
+| 8 | 0.03 | fastica | 7.12 | – | – |
+| 8 | 0.03 | gmm_bic | 9.06 | – | – |
+| 8 | 0.03 | ismb | 7.62 | 0.56 | 19.75 |
+| 8 | 0.03 | jointdiag | 7.50 | – | – |
+| 8 | 0.03 | topk_sae | 1.81 | – | – |
+| 8 | 0.10 | fastica | 4.75 | – | – |
+| 8 | 0.10 | gmm_bic | 6.19 | – | – |
+| 8 | 0.10 | ismb | 4.62 | 1.00 | 32.00 |
+| 8 | 0.10 | jointdiag | 4.62 | – | – |
+| 8 | 0.10 | topk_sae | 4.00 | – | – |
+| 8 | 0.30 | fastica | 3.50 | – | – |
+| 8 | 0.30 | gmm_bic | 7.12 | – | – |
+| 8 | 0.30 | ismb | 3.12 | 0.31 | 3.56 |
+| 8 | 0.30 | jointdiag | 3.50 | – | – |
+| 8 | 0.30 | topk_sae | 6.06 | – | – |
+| 16 | 0.03 | fastica | 3.50 | – | – |
+| 16 | 0.03 | gmm_bic | 5.44 | – | – |
+| 16 | 0.03 | ismb | 3.50 | 0.78 | 8.56 |
+| 16 | 0.03 | jointdiag | 3.62 | – | – |
+| 16 | 0.03 | topk_sae | 3.97 | – | – |
+| 16 | 0.10 | fastica | 3.62 | – | – |
+| 16 | 0.10 | gmm_bic | 6.12 | – | – |
+| 16 | 0.10 | ismb | 2.06 | 0.94 | 10.19 |
+| 16 | 0.10 | jointdiag | 3.56 | – | – |
+| 16 | 0.10 | topk_sae | 4.19 | – | – |
+| 16 | 0.30 | fastica | 1.84 | – | – |
+| 16 | 0.30 | gmm_bic | 5.72 | – | – |
+| 16 | 0.30 | ismb | 1.78 | 0.94 | 6.50 |
+| 16 | 0.30 | jointdiag | 1.84 | – | – |
+| 16 | 0.30 | topk_sae | 5.12 | – | – |
+
+### E6 — TopK SAE baseline on planted data *(pilot)*
+
+| dict_mult | k | val_fve | dead_frac | mmcs_across_seeds | count_mae | count_bias |
+|---|---|---|---|---|---|---|
+| 2 | 1 | 0.65 | 0.01 | 0.93 | 13.51 | 13.51 |
+| 2 | 2 | 0.81 | 0.04 | 0.88 | 7.27 | 7.27 |
+| 2 | 4 | 0.96 | 0.11 | 0.86 | 6.86 | 6.86 |
+| 4 | 1 | 0.72 | 0.05 | 0.93 | 23.89 | 23.89 |
+| 4 | 2 | 0.83 | 0.04 | 0.88 | 18.98 | 18.98 |
+| 4 | 4 | 0.96 | 0.16 | 0.82 | 20.48 | 20.48 |
+
+Correlation between reconstruction quality (FVE) and count error: **-0.20**. Good
+reconstruction does not certify multiplicity (plan p.10).
+
 <!-- RESULTS:END -->
 
 ## 6. Experiments E0–E10
@@ -183,7 +400,7 @@ Full designs, expected patterns, stop rules and compute estimates are in
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[all]"          # numpy/scipy/sklearn + torch + transformers + pytest
-pytest -q                         # 105 tests (≈ 6 min on 4 CPU cores)
+pytest -q                         # 107 tests (≈ 6 min on 4 CPU cores)
 
 polyid list                                            # all experiments
 polyid run configs/planted/e0_theory_gate.yaml         # theory gate (≈ 8 min, 4 cores)
@@ -246,7 +463,7 @@ src/polyid/
 └── cli.py               `polyid run|list`
 configs/                 one YAML per experiment (+ smoke configs)
 docs/                    THEORY · ASSUMPTIONS · EXPERIMENT_PLAN · PREREGISTRATION · READING_MAP
-tests/                   105 tests incl. AST leakage scan, Schur–Horn exactness, rank-test size
+tests/                   107 tests incl. AST leakage scan, Schur–Horn exactness, rank-test size
 results/                 manifests, summary CSVs and figures of every run reported above
 ```
 

@@ -201,13 +201,13 @@
     },
     {
       "condition": "overcomplete_24",
-      "id_frac_identified": 1.0,
+      "id_frac_identified": 0.0,
       "id_frac_partial": 0.0,
-      "id_frac_misspecified": 0.0,
-      "id_mean_width": 0.0,
+      "id_frac_misspecified": 1.0,
+      "id_mean_width": 24.0,
       "id_n_groups": 0.0,
-      "id_misspecified": 0.0,
-      "id_misfit_detectable": null,
+      "id_misspecified": 1.0,
+      "id_misfit_detectable": true,
       "id_procedure_covers_truth": 1.0
     },
     {

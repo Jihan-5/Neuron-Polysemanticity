@@ -1,6 +1,6 @@
 {
   "experiment": "e4_coverage_d3",
-  "created_utc": "2026-10-19T00:44:15+00:00",
+  "created_utc": "2026-10-19T01:48:42+00:00",
   "config": {
     "experiment": "e4_coverage_d3",
     "seed": 20261018,
@@ -74,7 +74,7 @@
   },
   "config_hash": "b9e39f352f8875ae",
   "git": {
-    "commit": "c74054cd3f1aa0623473d7890ba9db80eea5cc05",
+    "commit": "53cb5f8f9a3e755ac93c736aa808e71e8b2e38a6",
     "dirty": true
   },
   "versions": {

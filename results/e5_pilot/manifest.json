@@ -1,13 +1,14 @@
 {
   "experiment": "e5_toy_superposition",
-  "created_utc": "2026-10-19T01:36:51+00:00",
+  "created_utc": "2026-10-19T02:41:24+00:00",
   "config": {
     "experiment": "e5_toy_superposition",
     "seed": 20261018,
     "spec": {
       "tau": 0.3,
       "v_min": 0.002,
-      "max_abs_cos": 0.98
+      "max_abs_cos": 0.98,
+      "k_max": 32
     },
     "K": 32,
     "d": [
@@ -48,9 +49,9 @@
       }
     }
   },
-  "config_hash": "fcd3b28af0c6ea38",
+  "config_hash": "a381652f7016a8b6",
   "git": {
-    "commit": "85ed26264eeb21b34e37aab2b73ba14679ac1d2a",
+    "commit": "53cb5f8f9a3e755ac93c736aa808e71e8b2e38a6",
     "dirty": true
   },
   "versions": {

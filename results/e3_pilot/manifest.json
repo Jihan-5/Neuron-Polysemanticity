@@ -1,6 +1,6 @@
 {
   "experiment": "e3_frequency_shift",
-  "created_utc": "2026-10-19T01:34:34+00:00",
+  "created_utc": "2026-10-19T02:39:14+00:00",
   "config": {
     "seed": 20261018,
     "spec": {
@@ -75,7 +75,7 @@
   },
   "config_hash": "2a690ecd64813cc7",
   "git": {
-    "commit": "f04e04d9f3e973ee3c11cecac2d9e4a2b26bfa87",
+    "commit": "53cb5f8f9a3e755ac93c736aa808e71e8b2e38a6",
     "dirty": true
   },
   "versions": {

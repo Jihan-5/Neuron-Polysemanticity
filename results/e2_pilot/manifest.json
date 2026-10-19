@@ -1,6 +1,6 @@
 {
   "experiment": "e2_stress",
-  "created_utc": "2026-10-19T01:19:12+00:00",
+  "created_utc": "2026-10-19T02:24:06+00:00",
   "config": {
     "seed": 20261018,
     "spec": {
@@ -48,6 +48,9 @@
       },
       "fastica": {},
       "jointdiag": {
+        "n_starts": 6
+      },
+      "jointdiag_cum": {
         "n_starts": 6
       },
       "boot_percentile": {
@@ -168,9 +171,9 @@
       }
     }
   },
-  "config_hash": "3099946422fe7e3a",
+  "config_hash": "facf29316f021f88",
   "git": {
-    "commit": "6834ca09fa7e651b5eca3bd9fc43c5ccba071101",
+    "commit": "53cb5f8f9a3e755ac93c736aa808e71e8b2e38a6",
     "dirty": true
   },
   "versions": {

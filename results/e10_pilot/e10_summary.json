@@ -9,14 +9,14 @@
     },
     {
       "strategy": "balanced",
-      "width": 3.316666666666667,
+      "width": 3.4791666666666665,
       "coverage": 1.0,
       "all_covered": 1.0,
       "n_groups": 0.5333333333333333
     },
     {
       "strategy": "random",
-      "width": 3.425,
+      "width": 3.5083333333333333,
       "coverage": 1.0,
       "all_covered": 1.0,
       "n_groups": 1.0

@@ -1,6 +1,6 @@
 {
   "experiment": "e6_sae_comparison",
-  "created_utc": "2026-10-19T01:37:39+00:00",
+  "created_utc": "2026-10-19T02:42:11+00:00",
   "config": {
     "seed": 20261018,
     "spec": {
@@ -53,7 +53,7 @@
   },
   "config_hash": "4a3bd3319e5c5e44",
   "git": {
-    "commit": "cce28d67db7df70d4a4fe6c4dab364192020cc87",
+    "commit": "53cb5f8f9a3e755ac93c736aa808e71e8b2e38a6",
     "dirty": true
   },
   "versions": {

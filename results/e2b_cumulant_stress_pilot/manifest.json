@@ -1,6 +1,6 @@
 {
   "experiment": "e2_stress",
-  "created_utc": "2026-10-19T01:25:47+00:00",
+  "created_utc": "2026-10-19T02:37:57+00:00",
   "config": {
     "seed": 20261018,
     "spec": {
@@ -150,7 +150,7 @@
   },
   "config_hash": "0379653e8904e4b6",
   "git": {
-    "commit": "bd714f157798523705f57e95a88b7c08ae5cdc89",
+    "commit": "53cb5f8f9a3e755ac93c736aa808e71e8b2e38a6",
     "dirty": true
   },
   "versions": {

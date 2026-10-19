@@ -1,6 +1,6 @@
 {
   "experiment": "e1_planted_grid",
-  "created_utc": "2026-10-19T01:00:06+00:00",
+  "created_utc": "2026-10-19T02:04:21+00:00",
   "config": {
     "seed": 20261018,
     "spec": {
@@ -84,6 +84,9 @@
       "jointdiag": {
         "n_starts": 6
       },
+      "jointdiag_cum": {
+        "n_starts": 6
+      },
       "boot_percentile": {
         "n_boot": 200
       },
@@ -97,9 +100,9 @@
       }
     }
   },
-  "config_hash": "ddf305e5e25fafc8",
+  "config_hash": "b8db68cba5adaf7c",
   "git": {
-    "commit": "c74054cd3f1aa0623473d7890ba9db80eea5cc05",
+    "commit": "53cb5f8f9a3e755ac93c736aa808e71e8b2e38a6",
     "dirty": true
   },
   "versions": {

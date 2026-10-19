@@ -15,6 +15,6 @@ noise_correlated_stationary,1.0,0.0,0.0,0.0,0.0,0.0,,1.0
 noise_env_heteroscedastic,0.0,0.0,1.0,0.0,0.0,1.0,True,1.0
 noise_env_scaled,0.0,0.0,1.0,0.0,0.0,1.0,True,1.0
 noise_student_t,1.0,0.0,0.0,0.0,0.0,0.0,,1.0
-overcomplete_24,1.0,0.0,0.0,0.0,0.0,0.0,,1.0
+overcomplete_24,0.0,0.0,1.0,24.0,0.0,1.0,True,1.0
 unknown_K_8,1.0,0.0,0.0,0.0,0.0,0.0,,1.0
 weak_diversity,1.0,0.0,0.0,0.0,0.0,0.0,,1.0
