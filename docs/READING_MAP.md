@@ -1,9 +1,9 @@
 # Reading map: syllabus → code
 
 Each Research-B reading in the *Revised Core Reading Syllabus* (18 Oct 2026) is mapped to the
-code, test or experiment that applies it, plus its "done when" exercise. Readings for the
-other two workstreams (activation monitoring, Override Lab) are out of scope for this
-repository.
+code, test or experiment that applies it, plus its "done when" exercise. The monitoring
+readings (Research A) are mapped in `docs/monitoring/READING_MAP.md`. Override Lab readings are
+out of scope for this repository.
 
 | ID | Reading | Applied in | "Done when" exercise → artefact |
 |---|---|---|---|
