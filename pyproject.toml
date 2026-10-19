@@ -28,7 +28,6 @@ all = ["torch>=2.2", "transformers>=4.40", "datasets>=2.18", "pytest>=8.0"]
 
 [project.scripts]
 polyid = "polyid.cli:main"
-actmon = "actmon.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

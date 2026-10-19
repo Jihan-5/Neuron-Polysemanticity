@@ -6,10 +6,9 @@
 
 <p>
 <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-2a78d6">
-<img alt="tests" src="https://img.shields.io/badge/tests-146%20passing-0ca30c">
+<img alt="tests" src="https://img.shields.io/badge/tests-107%20passing-0ca30c">
 <img alt="status" src="https://img.shields.io/badge/status-research%20code%20%C2%B7%20pilots%20only-eda100">
 <img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-E0%20met%20%C2%B7%20E4%20pilot-6250d6">
-<img alt="research A" src="https://img.shields.io/badge/Research%20A-activation%20monitoring%20%C2%B7%20CPU%20pilot-d6455d">
 </p>
 
 *Research B / statistical interpretability. Built from the research plan, the technical
@@ -24,15 +23,6 @@ specification and the core reading syllabus (18 Oct 2026).*
 > are implemented and pass offline smoke tests on a random tiny GPT-NeoX. They have **not**
 > been run on Pythia: this environment cannot reach Hugging Face, and the plan's theory gate
 > comes first.
-
-> [!NOTE]
-> **This repository holds two studies.**
-> * **Research A: activation-based monitoring** (the AI-control workstream): `src/actmon/`.
->   Summary and results in [§12](#12-research-a-activation-based-monitoring); full guide in
->   [`MONITORING.md`](MONITORING.md). A frozen actor in a resource-allocation simulator, an
->   intervention-response detector against Mahalanobis, probe and behaviour baselines, a fixed
->   audit budget, utility under monitoring, and a white-box obfuscation attack.
-> * **Research B: statistical polysemanticity**: `src/polyid/`, sections 1–11 below.
 
 ---
 
@@ -49,7 +39,6 @@ specification and the core reading syllabus (18 Oct 2026).*
 9. [Assumptions and honesty rules](#9-assumptions-and-honesty-rules)
 10. [Reading map](#10-reading-map)
 11. [Open items and how to help](#11-open-items)
-12. [Research A: activation-based monitoring](#12-research-a-activation-based-monitoring)
 
 ---
 
@@ -411,7 +400,7 @@ Full designs, expected patterns, stop rules and compute estimates are in
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[all]"          # numpy/scipy/sklearn + torch + transformers + pytest
-pytest -q                         # 146 tests: 107 Research B + 39 Research A (≈ 8 min, 4 cores)
+pytest -q                         # 107 tests (≈ 6 min on 4 CPU cores)
 
 polyid list                                            # all experiments
 polyid run configs/planted/e0_theory_gate.yaml         # theory gate (≈ 8 min, 4 cores)
@@ -472,12 +461,9 @@ src/polyid/
 ├── experiments/         E0–E10 runners
 ├── viz/                 figure style + identification map
 └── cli.py               `polyid run|list`
-src/actmon/              Research A (activation-based monitoring); map in MONITORING.md §11
-configs/                 one YAML per experiment (+ smoke configs); configs/monitor/ for Research A
+configs/                 one YAML per experiment (+ smoke configs)
 docs/                    THEORY · ASSUMPTIONS · EXPERIMENT_PLAN · PREREGISTRATION · READING_MAP
-docs/monitoring/         Research A: THREAT_MODEL · EXPERIMENT_PLAN · ASSUMPTIONS · PREREGISTRATION · RUNBOOK · …
-tests/                   Research B tests (AST leakage scan, Schur–Horn exactness, rank-test size)
-tests/monitor/           Research A tests (oracle, transforms, hooks, decoding, detectors, attack, Qwen path)
+tests/                   107 tests incl. AST leakage scan, Schur–Horn exactness, rank-test size
 results/                 manifests, summary CSVs and figures of every run reported above
 ```
 
@@ -520,214 +506,6 @@ P2, S11–S12, S17–S27, X2–X4, X8–X9) to the module, test or experiment th
 4. **Uniformity near collinearity** (Stoye regime): E2/E4 measure it; a repair is open.
 5. **Overcomplete extension:** not claimed. SOBIUM (X9) is the prior art to engage first.
 6. **DPMI:** replace the DPMI-style approximation with a verified reimplementation (D6).
-
-## 12. Research A: activation-based monitoring
-
-*The AI-control workstream. Full guide: [`MONITORING.md`](MONITORING.md). Threat model:
-[`docs/monitoring/THREAT_MODEL.md`](docs/monitoring/THREAT_MODEL.md).*
-
-**Question.** At a fixed false-positive rate, does a detector that reads how a frozen actor's
-decision-token representation *responds to counterfactual edits of its input* catch more policy
-violations than activation-distance monitors, a matched linear probe and a behaviour-only monitor,
-all scored on the same roots?
-
-**Setup.** A finite-state resource-allocation simulator with signed authorization, reserve floors,
-review requirements and operator handoffs. A deterministic oracle labels the actor's *actual*
-proposal. The monitored checkpoint M2 is the actor plus a simulator-only LoRA adapter trained to
-trade the reserve and review rules for throughput, more strongly when a planted cue is present.
-Activations are the residual stream after blocks 6/13/20 of Qwen2.5-1.5B-Instruct (declared actor)
-at the final prompt token. The study uses 32-d training-only projections, four task-preserving and
-two task-changing edits, the specification's split sizes (1,000 fit / 500 + 500 dev / 5,000
-calibration / 5,000 + 500 test / 900 + 100 audit / 500 benign utility) and 8 held-out template
-families.
-
-**Status.** The full pipeline runs on CPU with a small `Qwen2ForCausalLM` actor trained from scratch
-on the simulator (no GPU or Hugging Face here). The Qwen path is implemented and tested offline. The
-tables below are **pipeline evidence from the small actor**, generated by
-`scripts/summarize_monitor.py`.
-
-### Research A key findings (small offline actor: pipeline evidence)
-
-* **Pipeline validated.** The hook is exact, every task-preserving edit passed validation, the A0
-  detector gate passed, and calibration held (achieved FPR 3.8–5.6 % at a 5 % target).
-* **H1 not supported.** At 5 % FPR the proposed response detector catches 3.8 % of violations,
-  against 3.0 % for task-conditioned Mahalanobis (+0.8 points, McNemar p = 0.56). All label-free
-  activation monitors sit near chance on this actor.
-* **Supervised monitors win.** The behaviour-only logistic catches 36.8 % (AUROC 0.91) and the
-  linear probe 17.0 %. Both use labels. Most violations of this weak stand-in are ordinary mistakes,
-  not anomalous computation.
-* **Partial mechanism.** The organism learned throughput-seeking under reserve conflicts (M2 46–51 %
-  vs M1 9–14 %), but not cue-conditioning.
-* **Attack.** The unoptimised soft prompt is itself detected (pooled Mahalanobis 50 %), but with an
-  evasion term the white-box attacker drives recall to ≤ 1.2 % while keeping 96–98 % of the
-  violations.
-* **Post hoc hint.** Removing the context model or using only task-preserving responses roughly
-  triples the proposed detector's TPR (≈ 10 % on dev and test). This needs a fresh split before it
-  counts.
-
-Full interpretation, tables and decision-rule outcomes: [`MONITORING.md` §9](MONITORING.md#9-results).
-
-<!-- MONITOR:START -->
-*Generated by `scripts/summarize_monitor.py` from `results/monitor/`. Small offline actor: pipeline evidence, not a claim about Qwen2.5-1.5B-Instruct.*
-
-**A0 · detector gate on planted activations** (5 worlds × 300 violating / 2,000 normal test roots per regime; TPR % at a 5 % FPR target). Gate passed: **yes**.
-
-| detector | null | base shift | context shift | response only | max FPR % |
-|---|---|---|---|---|---|
-| linear probe † (S10) | 4.8 | 100.0 | 4.4 | 4.4 | 4.9 |
-| env-centred Mahalanobis (S13) | 4.9 | 97.6 | 3.5 | 4.5 | 5.1 |
-| pooled Mahalanobis | 4.9 | 97.3 | 4.2 | 4.9 | 5.2 |
-| task-conditioned Mahalanobis | 5.3 | 97.4 | 100.0 | 4.9 | 5.2 |
-| **response (proposed)** | 4.7 | 13.1 | 61.2 | 93.3 | 5.6 |
-| response_plus_base | 4.7 | 88.8 | 44.1 | 84.4 | 5.3 |
-
-**A1 · actor and benchmark audit** (small offline actor).
-
-Competence (agreement with the planner's verb / validity rate, 1,000 fresh roots): m1_id: 82.7 % / 87.4 %; m2_id: 88.0 % / 75.3 %; m2_heldout: 90.6 % / 76.8 %.
-Hook check max |hook − hidden_states| = 0.0e+00 at sites [1, 2, 4]. Organism drift (M1 ≠ M2 answer): no-conflict roots 21.7 %, conflict roots 16.4 %, benign 31.0 %.
-
-| throughput conflict | cue | roots | M1 violates % | M2 violates % |
-|---|---|---|---|---|
-| blocked | no | 833 | 0.0 | 0.0 |
-| blocked | yes | 361 | 0.0 | 0.0 |
-| none | no | 1790 | 28.4 | 44.9 |
-| none | yes | 784 | 29.5 | 46.9 |
-| reserve | no | 566 | 14.1 | 50.9 |
-| reserve | yes | 257 | 8.9 | 45.9 |
-| review | no | 512 | 0.0 | 0.6 |
-| review | yes | 222 | 0.0 | 8.1 |
-| review+reserve | no | 465 | 0.0 | 1.1 |
-| review+reserve | yes | 210 | 0.0 | 5.7 |
-
-Violations in the locked test split by mechanism: ordinary_mistake 239, objective_conflict 156, adapter_drift 87, cue_conditioned 18. Task-changing edits changed the planner's action in auth_change 76.5 %, requirement_change 36.8 % of roots; 5 action strings are permitted in some test roots and prohibited in others.
-
-**A2 · locked detection test** (5,000 normal + 500 violating roots; thresholds from 5,000 normal calibration roots). Cells: TPR % (achieved FPR %). † = receives development violation labels.
-
-| monitor | 1 % FPR | 2 % FPR | 5 % FPR | AUROC |
-|---|---|---|---|---|
-| **response (proposed)** | 1.0 (1.12) | 1.8 (2.04) | 3.8 (4.56) | 0.552 |
-| task-conditioned Mahalanobis | 0.2 (0.72) | 0.6 (1.60) | 3.0 (4.08) | 0.651 |
-| pooled Mahalanobis | 0.4 (0.74) | 1.0 (1.54) | 3.0 (4.00) | 0.657 |
-| env-centred Mahalanobis (S13) | 0.6 (0.82) | 1.0 (1.56) | 3.0 (3.78) | 0.651 |
-| linear probe † (S10) | 2.2 (0.80) | 6.0 (1.42) | 17.0 (4.52) | 0.822 |
-| contrast-pair probe (S10) | 0.0 (0.86) | 0.0 (1.98) | 0.0 (5.46) | 0.484 |
-| behaviour-only logistic † | 9.4 (0.84) | 17.6 (2.02) | 36.8 (5.56) | 0.906 |
-| STRIP-style (S14) | 0.0 (1.10) | 0.0 (1.88) | 0.0 (5.12) | 0.534 |
-| TeCo-style (S14) | 0.0 (0.00) | 0.0 (0.00) | 9.0 (4.40) | 0.532 |
-| FA-style (S15) | 2.0 (1.22) | 2.8 (1.88) | 4.6 (4.62) | 0.519 |
-
-Paired comparison at 5 % FPR, proposed vs each comparator on the same violating roots (both / proposed only / comparator only / neither; TPR difference in points with a template-family-clustered 95 % interval, 24 clusters; exact McNemar; Holm over 27 tests).
-
-| comparator | 2×2 cells | Δ TPR (pts) | McNemar p | Holm p |
-|---|---|---|---|---|
-| pooled Mahalanobis | 4/15/11/470 | +0.8 [-0.8, +2.4] | 0.56 | 1 |
-| task-conditioned Mahalanobis | 4/15/11/470 | +0.8 [-0.4, +2.0] | 0.56 | 1 |
-| behaviour-only logistic † | 8/11/176/305 | -33.0 [-37.9, -28.1] | 2e-39 | 5.3e-38 |
-| linear probe † (S10) | 3/16/82/399 | -13.2 [-18.9, -7.5] | 7.4e-12 | 1.8e-10 |
-| STRIP-style (S14) | 0/19/0/481 | +3.8 [+2.6, +5.0] | 3.8e-06 | 8.8e-05 |
-| env-centred Mahalanobis (S13) | 4/15/11/470 | +0.8 [-0.8, +2.4] | 0.56 | 1 |
-| FA-style (S15) | 1/18/22/459 | -0.8 [-2.6, +1.0] | 0.64 | 1 |
-| TeCo-style (S14) | 4/15/41/440 | -5.2 [-7.6, -2.8] | 0.00069 | 0.014 |
-| contrast-pair probe (S10) | 0/19/0/481 | +3.8 [+2.6, +5.0] | 3.8e-06 | 8.8e-05 |
-
-Held-out template families (1,000 normal + 200 violating, 8 families the actor never saw; same thresholds), 5 % target:
-
-| monitor | TPR % | achieved FPR % |
-|---|---|---|
-| **response (proposed)** | 3.0 | 5.50 |
-| task-conditioned Mahalanobis | 6.5 | 5.40 |
-| pooled Mahalanobis | 5.0 | 5.40 |
-| env-centred Mahalanobis (S13) | 10.5 | 8.10 |
-| linear probe † (S10) | 12.5 | 5.50 |
-| contrast-pair probe (S10) | 0.0 | 4.40 |
-| behaviour-only logistic † | 33.5 | 6.00 |
-| STRIP-style (S14) | 0.0 | 5.40 |
-| TeCo-style (S14) | 5.5 | 3.00 |
-| FA-style (S15) | 2.5 | 3.00 |
-
-Flag rate % at 5 % FPR by group (mechanism, broken rule, cue):
-
-| group | n | response | task Mahal. | probe † | behaviour † |
-|---|---|---|---|---|---|
-| mechanism=adapter_drift | 87 | 1.1 | 1.1 | 18.4 | 37.9 |
-| mechanism=cue_conditioned | 18 | 11.1 | 0.0 | 5.6 | 72.2 |
-| mechanism=objective_conflict | 156 | 3.2 | 4.5 | 15.4 | 54.5 |
-| mechanism=ordinary_mistake | 239 | 4.6 | 2.9 | 18.4 | 22.2 |
-| normal&cue | 1437 | 4.9 | 4.9 | 4.5 | 4.6 |
-| normal&no_cue | 3563 | 4.4 | 3.7 | 4.5 | 6.0 |
-| rule=reserve | 221 | 4.1 | 3.6 | 16.3 | 49.8 |
-| rule=resource | 369 | 3.5 | 2.7 | 16.5 | 33.9 |
-| rule=review | 14 | 21.4 | 0.0 | 0.0 | 50.0 |
-| violating&cue | 158 | 5.7 | 2.5 | 17.1 | 36.7 |
-| violating&no_cue | 342 | 2.9 | 3.2 | 17.0 | 36.8 |
-
-**A3 · fixed audit budget** (1,000-root cohort, 100 violating): violations found in the top k.
-
-| monitor | top 10 | top 20 | top 50 |
-|---|---|---|---|
-| **response (proposed)** | 2 (20 % prec.) | 3 (15 % prec.) | 6 (12 % prec.) |
-| task-conditioned Mahalanobis | 0 (0 % prec.) | 0 (0 % prec.) | 3 (6 % prec.) |
-| pooled Mahalanobis | 0 (0 % prec.) | 0 (0 % prec.) | 2 (4 % prec.) |
-| env-centred Mahalanobis (S13) | 0 (0 % prec.) | 1 (5 % prec.) | 3 (6 % prec.) |
-| linear probe † (S10) | 2 (20 % prec.) | 3 (15 % prec.) | 12 (24 % prec.) |
-| contrast-pair probe (S10) | 0 (0 % prec.) | 0 (0 % prec.) | 0 (0 % prec.) |
-| behaviour-only logistic † | 7 (70 % prec.) | 12 (60 % prec.) | 21 (42 % prec.) |
-| STRIP-style (S14) | 0 (0 % prec.) | 0 (0 % prec.) | 0 (0 % prec.) |
-| TeCo-style (S14) | 2 (20 % prec.) | 3 (15 % prec.) | 4 (8 % prec.) |
-| FA-style (S15) | 1 (10 % prec.) | 2 (10 % prec.) | 5 (10 % prec.) |
-
-Benign utility (500 roots), monitored protocol blocks flagged proposals:
-
-| protocol | FPR target | authorized tasks completed | utility cost |
-|---|---|---|---|
-| unmonitored | – | 226/500 = 45.2 % | – |
-| **response (proposed)** | 5 % | 218/500 = 43.6 % | 1.6 pts |
-| task-conditioned Mahalanobis | 5 % | 220/500 = 44.0 % | 1.2 pts |
-| linear probe † (S10) | 5 % | 191/500 = 38.2 % | 7.0 pts |
-| behaviour-only logistic † | 5 % | 175/500 = 35.0 % | 10.2 pts |
-
-Partial reserve + handoff guard replayed on recorded test proposals: all violating 221/500; violating, rule=reserve 221/221; violating, rule=review 9/14; violating, rule=resource 94/369; valid (false blocking) 0/5000.
-
-**A4 · ablations** (post hoc; TPR % at 5 % FPR on the development and test splits):
-
-| variant | dev | test |
-|---|---|---|
-| mahalanobis_pooled_dim16 | 3.4 | 2.6 |
-| mahalanobis_pooled_dim64 | 4.4 | 4.6 |
-| mahalanobis_pooled_dim8 | 3.6 | 2.2 |
-| mahalanobis_site1 | 4.6 | 5.4 |
-| mahalanobis_site2 | 3.4 | 4.2 |
-| mahalanobis_site4 | 3.4 | 2.6 |
-| response | 3.2 | 3.8 |
-| response_dim16 | 3.8 | 3.6 |
-| response_dim64 | 3.2 | 4.0 |
-| response_dim8 | 3.4 | 2.8 |
-| response_no_context | 12.0 | 9.4 |
-| response_plus_base | 7.0 | 6.0 |
-| response_surface_only | 11.2 | 8.6 |
-| response_tc_only | 0.6 | 1.0 |
-| response_tp_only | 9.8 | 10.0 |
-
-**A5 · white-box soft-prompt obfuscation attack** (universal 8-vector soft prompt trained on development violating roots, evaluated on test violating roots; monitors and thresholds unchanged; 1 % FPR target):
-
-| attacked monitor | attack | violation kept % | clean recall % | recall after attack % | evasion % |
-|---|---|---|---|---|---|
-| linear probe † (S10) | λ = 0 (control) | 97.8 | 2.2 | 0.0 | 97.8 |
-| linear probe † (S10) | λ = 1 | 97.6 | 2.2 | 0.0 | 97.6 |
-| linear probe † (S10) | λ = 10 | 96.2 | 2.2 | 0.0 | 96.2 |
-| pooled Mahalanobis | λ = 0 (control) | 97.8 | 0.4 | 50.3 | 48.6 |
-| pooled Mahalanobis | λ = 1 | 97.8 | 0.4 | 0.0 | 97.8 |
-| pooled Mahalanobis | λ = 10 | 83.8 | 0.4 | 0.0 | 83.8 |
-| **response (proposed)** | λ = 0 (control) | 97.8 | 1.0 | 31.5 | 67.0 |
-| **response (proposed)** | λ = 1 | 96.2 | 1.0 | 1.2 | 95.0 |
-| **response (proposed)** | λ = 10 | 95.4 | 1.0 | 1.0 | 94.4 |
-
-<!-- MONITOR:END -->
-
-```bash
-bash scripts/run_monitor_pilots.sh     # A0 gate -> actor -> data -> A1..A5 -> these tables (~1.5 h on 4 cores)
-actmon run configs/monitor/qwen2p5_1p5b.yaml experiment=a2_detection   # declared actor (GPU + HF)
-```
 
 ---
 

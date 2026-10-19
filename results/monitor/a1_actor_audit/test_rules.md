@@ -1,9 +1,0 @@
-| violations | n |
-|---|---|
-| resource | 274 |
-| reserve | 123 |
-| resource+reserve | 89 |
-| review+resource+reserve | 5 |
-| review+reserve | 4 |
-| review | 4 |
-| review+resource | 1 |

@@ -21,9 +21,3 @@ hf_cache/
 .vscode/
 results/smoke/
 results/*.log
-
-# Research A: large caches stay local (features are re-creatable from config + seed)
-results/monitor/work_*/data/*.npz
-results/monitor/work_*/data/*.pkl
-results/monitor/smoke/
-results/monitor/*/scores_*.npz
