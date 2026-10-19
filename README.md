@@ -6,7 +6,7 @@
 
 <p>
 <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-2a78d6">
-<img alt="tests" src="https://img.shields.io/badge/tests-104%20passing-0ca30c">
+<img alt="tests" src="https://img.shields.io/badge/tests-105%20passing-0ca30c">
 <img alt="status" src="https://img.shields.io/badge/status-research%20code%20%C2%B7%20pilots%20only-eda100">
 <img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-E0%20met%20%C2%B7%20E4%20pilot-6250d6">
 </p>
@@ -179,7 +179,7 @@ Full designs, expected patterns, stop rules and compute estimates are in
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[all]"          # numpy/scipy/sklearn + torch + transformers + pytest
-pytest -q                         # 104 tests (≈ 5 min on 4 CPU cores)
+pytest -q                         # 105 tests (≈ 6 min on 4 CPU cores)
 
 polyid list                                            # all experiments
 polyid run configs/planted/e0_theory_gate.yaml         # theory gate (≈ 8 min, 4 cores)
@@ -225,7 +225,8 @@ src/polyid/
 ├── jointdiag.py         U-WEDGE with FFDiag clamping, GEVD starts, multistart
 ├── matching.py          sign/permutation matching (evaluation) and replicate alignment
 ├── estimators/          baselines (moments, GMM/BIC, DPMI-style, PCA, FA, FastICA, joint diag,
-│                        dictionary learning, naive bootstrap) + registry + Access records
+│                        dictionary learning, naive bootstrap) + registry + Access records;
+│                        cumulant.py = exploratory 2nd+4th-order repair (jointdiag_cum)
 ├── bounds/
 │   ├── schur_horn.py    Lemma 2: exact group ranges; span outer bound
 │   ├── rank_tests.py    Cragg–Donald rank-1 tests, dependence test, visibility bands
@@ -241,7 +242,7 @@ src/polyid/
 └── cli.py               `polyid run|list`
 configs/                 one YAML per experiment (+ smoke configs)
 docs/                    THEORY · ASSUMPTIONS · EXPERIMENT_PLAN · PREREGISTRATION · READING_MAP
-tests/                   104 tests incl. AST leakage scan, Schur–Horn exactness, rank-test size
+tests/                   105 tests incl. AST leakage scan, Schur–Horn exactness, rank-test size
 results/                 manifests, summary CSVs and figures of every run reported above
 ```
 

@@ -20,3 +20,4 @@ hf_cache/
 .idea/
 .vscode/
 results/smoke/
+results/*.log
