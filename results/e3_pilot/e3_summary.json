@@ -1,0 +1,64 @@
+{
+  "stability": [
+    {
+      "method": "dict_learning",
+      "frac_neurons_changed": 0.9045138888888888,
+      "cross_corpus_spearman": 0.5175380972308584,
+      "mae": 4.762152777777778,
+      "coverage": NaN
+    },
+    {
+      "method": "dpmi_style",
+      "frac_neurons_changed": NaN,
+      "cross_corpus_spearman": 0.5526960784313724,
+      "mae": NaN,
+      "coverage": NaN
+    },
+    {
+      "method": "fastica",
+      "frac_neurons_changed": 0.5295138888888888,
+      "cross_corpus_spearman": 0.8563261867636359,
+      "mae": 0.484375,
+      "coverage": NaN
+    },
+    {
+      "method": "gmm_bic",
+      "frac_neurons_changed": 0.6875,
+      "cross_corpus_spearman": 0.29820185699707874,
+      "mae": 0.8333333333333334,
+      "coverage": NaN
+    },
+    {
+      "method": "ismb",
+      "frac_neurons_changed": 0.5121527777777778,
+      "cross_corpus_spearman": 0.8212939498831096,
+      "mae": 0.4930555555555556,
+      "coverage": 1.0
+    },
+    {
+      "method": "jointdiag",
+      "frac_neurons_changed": 0.3298611111111111,
+      "cross_corpus_spearman": 0.8897874057072114,
+      "mae": 0.28472222222222227,
+      "coverage": NaN
+    },
+    {
+      "method": "jointdiag_cum",
+      "frac_neurons_changed": 0.003472222222222222,
+      "cross_corpus_spearman": 0.9995573191957663,
+      "mae": 0.001736111111111111,
+      "coverage": NaN
+    },
+    {
+      "method": "moments",
+      "frac_neurons_changed": NaN,
+      "cross_corpus_spearman": 0.17622549019607844,
+      "mae": NaN,
+      "coverage": NaN
+    }
+  ],
+  "figures": [
+    "results/e3_pilot/e3_frequency_shift_stability.png"
+  ],
+  "reps": 12
+}
