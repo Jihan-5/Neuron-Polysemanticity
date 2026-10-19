@@ -79,7 +79,7 @@ about $P_j$ when several decompositions fit**:
 | **Prop. 1** | Under second moments, a class of factors with collinear variance profiles is identified exactly up to $\{\mathrm{normalize}(A_G\Lambda^{1/2}R): R \in O(g)\}$ | proved ([THEORY §3](docs/THEORY.md#3-proposition-1--the-exact-second-moment-identified-set)), tested |
 | **Lemma 2** | The **exact** min/max of a class's contribution to $P_j$ follows from the Schur–Horn theorem as closed-form majorisation checks, so no search over rotations is needed | proved (§4); exact against a 20k-angle sweep |
 | **Prop. 2** | **Perfect co-occurrence cannot be detected from second moments.** A shared-switch block of any size is exactly fit by an uncorrelated model with *different* loadings, so every second-moment method can be confidently wrong | proved (§5); regression test |
-| **ISMB** | A tractable bounding procedure combining the parts above: rank tests decide which factors are separated, an analytic visibility band, GMS-selected sup-t loading bands, and Schur–Horn group ranges | implemented; asymptotic argument with stated conditions (§7) |
+| **ISMB** | A tractable bounding procedure combining the parts above: rank tests decide which factors are separated, an analytic visibility band, GMS-selected sup-t loading bands, and Schur–Horn group ranges | implemented; asymptotic argument with stated conditions (§7); **valid but not yet informative at `d = 16`** in pilots |
 | **AR-grid** | A weak-identification-robust confidence set (Anderson–Rubin logic) for the certified $d=3$ problem; an empty set signals misspecification | implemented; grid-restricted |
 
 ## 4. Method: ISMB in one picture
@@ -102,6 +102,29 @@ Merging only ever widens an interval. Every step that can fail non-uniformly (ne
 profiles) is measured in E2/E4 rather than assumed away.
 
 ## 5. Results so far
+
+### Key findings (read these first; all pilot-scale except E0)
+
+1. **Non-identification is real and constructible (E0, full run).** Two loading matrices with
+   identical covariances in every environment (difference 5.6 × 10⁻¹⁷) give different
+   multiplicities. When the target is identified, ISMB's width shrinks to 0. When it is not,
+   the width converges to the identified-set width and coverage stays at 1.0.
+2. **Point estimates are confidently wrong under non-identification, and more data does not
+   fix it (E4).** Joint-diagonalisation singletons are wrong 21–30 % of the time in the
+   collinear cell at every `n`, and 34–41 % under weak diversity. ISMB covers the truth 96–100 %
+   in those cells with ≤ 3.7 % confidently wrong.
+3. **Perfect co-occurrence defeats every second-moment method (Proposition 2, E4).** ISMB's
+   coverage there *falls* with `n` (0.97 → 0.83), exactly as the theory predicts. This is an
+   impossibility result, not a tuning problem.
+4. **ISMB is not yet informative at `d = 16` (E1).** It stays valid (coverage 1.0), but mean
+   width is 4.7–14.7 in well-separated cells and ≈ 16 in near-collinear ones. FastICA, which
+   uses non-Gaussianity, beats every second-moment method on point accuracy in the
+   near-collinear half of the grid. Most of the identifying information in this generator is
+   in higher moments (lab notebook §8). Adding cumulant conditions is the next step.
+5. **Honest negative:** in the `d = 3` pilot the *naive* bootstrap also covered, because its
+   replicates drift across the unidentified rotation. These pilots do **not** yet show an ISMB
+   advantage over it. Where ISMB differs is that it *has* a coverage argument and reports the
+   structure (which factors are merged, and why).
 
 <!-- RESULTS:START -->
 ### E0: theory gate (full run, 40 replicates × 7 sample sizes × 2 cases)
@@ -243,6 +266,10 @@ P2, S11–S12, S17–S27, X2–X4, X8–X9) to the module, test or experiment th
 
 ## 11. Open items
 
+0. **Add fourth-order cumulant conditions to ISMB** (top priority after the E1 pilot). FastICA's
+   accuracy where second moments fail shows the information is there. With independent
+   non-Gaussian latents this would identify collinear-profile classes. Co-occurrence would
+   stay unidentified (Prop. 2).
 1. **Statistician review** of Proposition 1, Lemma 2, Proposition 2 and the ISMB coverage
    argument (plan p.8 and syllabus S23 both flag this).
 2. **Full-scale runs:** E1 (500 reps × 24 cells), E2 (200 reps), E4 (500 reps). About a day on

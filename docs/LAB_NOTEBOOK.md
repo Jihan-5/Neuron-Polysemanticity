@@ -61,3 +61,19 @@ and which earlier outputs are void.
 * **Fix.** Every runner now scores against `oracle.truth_at(spec.tau)`. The E4 config pins the
   generator `tau` to 0.30. `tests/test_generator.py::test_truth_at_uses_the_requested_threshold`
   guards against regressions. The void output was deleted and E4 was re-run.
+
+### 8. E1 pilot: second moments are weak at `d = 16, E = 6`; non-Gaussianity is strong
+* **Observed (E1 pilot, 6 test datasets per cell).** In the `near_collinear` half of the grid
+  (population min pairwise profile sine 0.05–0.09), joint-diagonalisation count MAE was 2.5–6.5
+  with large positive bias, and ISMB merged nearly everything (mean width ≈ 16, coverage 1.0).
+  FastICA, which identifies through non-Gaussianity, had MAE 0–1.7 in the same cells.
+* **Checked.** Joint diagonalisation on the *population* moments of five near-collinear designs
+  recovers `A` exactly (Amari ≤ 1e-14, count MAE 0). The failure is statistical weak
+  identification at `n ≤ 5000`, not the optimiser.
+* **Implication for the plan.** The declared second-moment information set leaves most of the
+  identifying information in this generator unused: sparse Bernoulli × magnitude latents are
+  strongly non-Gaussian. The most promising repair is to add fourth-order cumulant conditions
+  per environment to the identified-set construction. Collinear-profile classes would then
+  be identified whenever the latents are independent and non-Gaussian. Proposition 2's
+  co-occurrence case (dependent latents) would remain unidentified. This is recommended
+  next step 1 in the README.

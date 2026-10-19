@@ -139,9 +139,12 @@ def run_planted_condition(exp: str, cond_id: str, gen_cfg: dict, methods: dict, 
 
 
 def save_tables(out_dir: Path, name: str, rows: list[dict] | pd.DataFrame) -> Path:
+    """Write a tidy table. Row-level tables (``*_rows``) are gzip-compressed: they are the
+    root-level evidence (syllabus S04: save root-level predictions before aggregation) and can be
+    large; pandas reads ``.csv.gz`` transparently."""
     out_dir.mkdir(parents=True, exist_ok=True)
     df = rows if isinstance(rows, pd.DataFrame) else pd.DataFrame(rows)
-    path = out_dir / f"{name}.csv"
+    path = out_dir / (f"{name}.csv.gz" if name.endswith("_rows") else f"{name}.csv")
     df.to_csv(path, index=False)
     return path
 
