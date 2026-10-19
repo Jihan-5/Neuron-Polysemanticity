@@ -1,0 +1,13 @@
+# E3 — fixed A, three "corpora" whose activity rates are centred at different levels.
+extends: base.yaml
+experiment: e3_frequency_shift
+reps: 100
+rate_centers: [0.05, 0.15, 0.30]
+methods:
+  moments: {}
+  gmm_bic: {k_max: 6, max_rows: 4000}
+  dpmi_style: {k_max: 8, max_rows: 3000}
+  fastica: {}
+  dict_learning: {alpha: 0.1, max_iter: 30}
+  jointdiag: {n_starts: 6}
+  ismb: {n_boot: 150, alpha: 0.05}

@@ -1,0 +1,19 @@
+# E0 — theory gate: one identifiable and one indistinguishable case (plan p.12 "first concrete action").
+experiment: e0_theory_gate
+seed: 20261018
+spec: {tau: 0.10, v_min: 0.006, max_abs_cos: 0.98}
+generator:
+  d: 4
+  K: 4
+  n_envs: 6
+  col_support_min: 1
+  col_support_max: 3
+  rate_center: 0.15
+  rate_spread: 0.6
+  noise_rel_sd: 0.05
+  diversity: well_separated
+  min_visibility: 0.012
+ns: [500, 1000, 2000, 5000, 10000, 20000, 50000]
+reps: 40
+n_boot: 200
+ismb: {alpha: 0.05}

@@ -1,0 +1,31 @@
+# Shared planted-generator defaults (plan p.5 "Initial configurations"; spec doc 24-setting grid).
+# Every experiment config `extends:` this file and overrides only what it varies.
+seed: 20261018
+spec:
+  tau: 0.10            # primary threshold; sensitivity 0.05 and 0.20 via `taus`
+  v_min: 0.006         # visibility: SD across environments of a factor's variance (unit-norm columns)
+  max_abs_cos: 0.98    # non-duplication bound for admissible explanations
+generator:
+  d: 16
+  K: 16
+  n_envs: 6
+  n_per_env: 5000
+  col_support_min: 1
+  col_support_max: 4
+  loading_low: 0.3
+  background_sd: 0.0
+  tau: 0.10
+  tau_margin: 0.03
+  max_abs_cos: 0.9
+  max_cond: 100.0
+  rate_center: 0.15
+  rate_spread: 0.6
+  diversity: well_separated
+  collinear_gamma: 0.6
+  collinear_eta: 0.15
+  min_visibility: 0.012
+  mag_low: 0.5
+  mag_high: 1.5
+  noise_rel_sd: 0.05
+  noise_mode: iid
+taus: [0.10, 0.05, 0.20]

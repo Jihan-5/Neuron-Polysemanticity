@@ -1,0 +1,15 @@
+# E10 — adaptive environment selection with sample splitting (selection data != inference data).
+extends: base.yaml
+experiment: e10_adaptive_envs
+reps: 100
+initial_envs: 3
+menu_size: 12
+budget: 2
+n_per_env: 5000
+n_pilot: 1000
+n_boot: 150
+n_boot_select: 50
+strategies: [random, balanced, adaptive]
+generator:
+  d: 8
+  K: 8

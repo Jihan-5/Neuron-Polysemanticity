@@ -1,0 +1,27 @@
+# E4 — coverage in the small certified problem (d = 3, K = 3, truth on the AR grid).
+experiment: e4_coverage_d3
+seed: 20261018
+spec: {tau: 0.30, v_min: 0.006, max_abs_cos: 0.95}
+entry_margin: 0.05
+reps: 500              # plan: "500 independent small simulated datasets"
+ns: [1000, 4000, 16000]
+generator:
+  d: 3
+  K: 3
+  n_envs: 4
+  rate_center: 0.15
+  rate_spread: 0.6
+  noise_rel_sd: 0.05
+  diversity: well_separated
+  min_visibility: 0.012
+conditions:
+  identifiable: {}
+  weak_diversity: {diversity: near_collinear, collinear_eta: 0.05}
+  collinear_pair: {collinear_groups: [[0, 1]]}
+  cooccurrence_perfect: {switch_corr_blocks: [[0, 1]], switch_corr: 1.0}
+methods:
+  jointdiag: {n_starts: 6}
+  boot_percentile: {n_boot: 200}
+  sensitivity: {n_restarts: 24, n_perturb: 10}
+  ismb: {n_boot: 200, alpha: 0.05}
+  ar_grid: {n_dirs: 120, alpha: 0.05}
