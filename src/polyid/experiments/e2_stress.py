@@ -78,6 +78,15 @@ def run(cfg: dict, out_dir: Path) -> dict:
            .agg(lambda s: s.mean() if s.dtype != object else s.iloc[0]).reset_index())
     save_tables(out_dir, "e2_population_identification", pop)
     figs = plot(agg, dsdf, [c for c, _ in conds], out_dir)
+    from polyid.viz.identification_map import identification_map
+
+    for m in ("ismb", "boot_percentile", "jointdiag"):
+        if m in set(df["method"]) and "covered" in df:
+            sub = df[df["covered"].notna()] if m != "jointdiag" else df.assign(
+                lower=df["point"], upper=df["point"], width=0.0,
+                covered=(df["point"] == df["truth"]).astype(float))
+            figs.append(str(identification_map(sub, m, "condition", None, out_dir / f"e2_identification_map_{m}.png",
+                                               y_order=[c for c, _ in conds], title=f"Identification map — {m}")))
     summary = {"conditions": [c for c, _ in conds], "reps": int(cfg["reps"]), "figures": figs,
                "population": pop.to_dict(orient="records")}
     write_json(out_dir / "e2_summary.json", summary)

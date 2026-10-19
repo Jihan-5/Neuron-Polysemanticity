@@ -104,7 +104,7 @@ def load_observed(cache_dir: str | Path, layer: int, split: str, envs: list[str]
     X = np.load(cache_dir / f"layer{layer}.npy", mmap_mode="r")
     mask = (idx["split"] == split).to_numpy()
     if envs is not None:
-        mask &= idx["env"].isin(envs).to_numpy()
+        mask = mask & idx["env"].isin(envs).to_numpy()
     sub = idx[mask]
     env_names = sorted(sub["env"].unique())
     env = sub["env"].map({e: i for i, e in enumerate(env_names)}).to_numpy()

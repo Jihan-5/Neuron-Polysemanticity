@@ -125,6 +125,12 @@ def run(cfg: dict, out_dir: Path) -> dict:
     # Wilson CI on simultaneous (all-neuron) coverage is in `all_covered_lo/hi`
     save_tables(out_dir, "e4_summary", agg)
     figs = plot(agg, list(conds), out_dir)
+    from polyid.viz.identification_map import identification_map
+
+    for m in ("ismb", "boot_percentile", "jointdiag", "ar_grid"):
+        if m in set(df["method"]):
+            figs.append(str(identification_map(df, m, "condition", "n", out_dir / f"e4_identification_map_{m}.png",
+                                               y_order=list(conds), title=f"Identification map — {m}")))
     summary = {"conditions": list(conds), "ns": cfg["ns"], "reps": int(cfg["reps"]), "figures": figs,
                "ar_empty_rate": info.groupby("condition")["ar_empty"].mean().to_dict() if "ar_empty" in info else {}}
     write_json(out_dir / "e4_summary.json", summary)

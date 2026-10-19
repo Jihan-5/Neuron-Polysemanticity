@@ -87,3 +87,19 @@ def test_ar_grid_contains_truth_on_grid():
     from scipy import stats
 
     assert J[idx[0]] < stats.chi2.ppf(0.9999, dof)
+
+
+def test_proposition2_perfect_cooccurrence_is_undetectable(spec):
+    """A shared-switch block is exactly fit by an uncorrelated model with different loadings."""
+    cfg = PlantedConfig(d=6, K=6, n_envs=6, switch_corr_blocks=[[0, 1, 2]], switch_corr=1.0)
+    ds = generate(cfg, SeedBank(31).child("prop2"), v_min=spec.v_min)
+    ps = population_stats(ds.oracle.pop_cov)
+    pop = ismb_population(ps.D, ps.pooled, spec)
+    assert pop["offdiag_ratio"] < 1e-6  # perfectly jointly diagonalisable: no detectable misfit
+    from polyid.matching import match_columns
+
+    _, c, cos = match_columns(pop["A_hat"], ds.oracle.A)
+    block = [cs for cc, cs in zip(c, cos) if cc in (0, 1, 2)]
+    assert min(block) < 0.999  # ...but the block's columns are not the true ones
+    ident = identified_set(ds.oracle, spec)
+    assert ident.misspecified and ident.misfit_detectable is False
