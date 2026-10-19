@@ -1,0 +1,31 @@
+{
+  "n_conditions": 12,
+  "reps": 6,
+  "pilot": true,
+  "equal_weight_summary": [
+    {
+      "method": "fastica",
+      "mae": 0.6050347222222222,
+      "bias": 0.6050347222222222,
+      "exact": 0.654513888888889,
+      "support_f1": 0.8971244732336282
+    },
+    {
+      "method": "jointdiag",
+      "mae": 2.217013888888889,
+      "bias": 2.217013888888889,
+      "exact": 0.3958333333333333,
+      "support_f1": 0.7348077584024014
+    },
+    {
+      "method": "jointdiag_cum",
+      "mae": 0.016493055555555556,
+      "bias": 0.0008680555555555551,
+      "exact": 0.9835069444444445,
+      "support_f1": 0.9898559554356177
+    }
+  ],
+  "figures": [
+    "results/e1b_cumulant_repair_pilot/e1_mae_vs_n.png"
+  ]
+}

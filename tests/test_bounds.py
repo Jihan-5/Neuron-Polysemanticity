@@ -103,3 +103,15 @@ def test_proposition2_perfect_cooccurrence_is_undetectable(spec):
     assert min(block) < 0.999  # ...but the block's columns are not the true ones
     ident = identified_set(ds.oracle, spec)
     assert ident.misspecified and ident.misfit_detectable is False
+
+
+def test_cumulant_repair_resolves_collinear_profiles(spec):
+    """Exactly collinear profiles defeat second moments; 4th-order slices identify the pair."""
+    from polyid.estimators import build_estimator
+    from polyid.matching import amari_distance
+
+    ds = generate(PlantedConfig(d=6, K=6, n_envs=5, n_per_env=40000, collinear_groups=[[0, 1]]),
+                  SeedBank(41).child("cum"), v_min=spec.v_min)
+    res = build_estimator("jointdiag_cum").fit(ds.observed, spec, np.random.default_rng(0))
+    assert amari_distance(np.linalg.inv(res.loadings), ds.oracle.A) < 0.05
+    assert np.mean(np.abs(res.point - ds.oracle.truth)) < 0.2

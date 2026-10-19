@@ -1,0 +1,98 @@
+{
+  "experiment": "e1_planted_grid",
+  "created_utc": "2026-10-19T01:24:40+00:00",
+  "config": {
+    "seed": 20261018,
+    "spec": {
+      "tau": 0.1,
+      "v_min": 0.006,
+      "max_abs_cos": 0.98
+    },
+    "generator": {
+      "d": 16,
+      "K": 16,
+      "n_envs": 6,
+      "n_per_env": 5000,
+      "col_support_min": 1,
+      "col_support_max": 4,
+      "loading_low": 0.3,
+      "background_sd": 0.0,
+      "tau": 0.1,
+      "tau_margin": 0.03,
+      "max_abs_cos": 0.9,
+      "max_cond": 100.0,
+      "rate_center": 0.15,
+      "rate_spread": 0.6,
+      "diversity": "well_separated",
+      "collinear_gamma": 0.6,
+      "collinear_eta": 0.15,
+      "min_visibility": 0.012,
+      "mag_low": 0.5,
+      "mag_high": 1.5,
+      "noise_rel_sd": 0.05,
+      "noise_mode": "iid"
+    },
+    "taus": [
+      0.1
+    ],
+    "experiment": "e1_planted_grid",
+    "reps": 6,
+    "dev_reps": 0,
+    "pilot": true,
+    "grid": {
+      "rate_center": [
+        0.05,
+        0.15,
+        0.3
+      ],
+      "noise_rel_sd": [
+        0.05,
+        0.2
+      ],
+      "diversity": [
+        "well_separated",
+        "near_collinear"
+      ],
+      "n_per_env": [
+        5000
+      ]
+    },
+    "methods": {
+      "jointdiag": {},
+      "fastica": {},
+      "jointdiag_cum": {}
+    }
+  },
+  "config_hash": "5782c0ea17f50403",
+  "git": {
+    "commit": "bd714f157798523705f57e95a88b7c08ae5cdc89",
+    "dirty": true
+  },
+  "versions": {
+    "python": "3.13.16",
+    "platform": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "sklearn": "1.9.1",
+    "pandas": "3.0.6",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.20.1",
+    "datasets": null
+  },
+  "seeds": {
+    "root": 20261018
+  },
+  "argv": [
+    ".venv/bin/polyid",
+    "run",
+    "configs/planted/e1_planted_grid.yaml",
+    "--out",
+    "results/e1b_cumulant_repair_pilot",
+    "reps=6",
+    "dev_reps=0",
+    "pilot=true",
+    "methods={jointdiag: {}, fastica: {}, jointdiag_cum: {}}",
+    "grid.n_per_env=[5000]",
+    "taus=[0.10]"
+  ]
+}

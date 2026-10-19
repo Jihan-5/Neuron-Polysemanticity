@@ -7,6 +7,7 @@ methods:
   gmm_bic: {k_max: 6, max_rows: 4000}
   fastica: {}
   jointdiag: {n_starts: 6}
+  jointdiag_cum: {n_starts: 6}     # exploratory: + 4th-order cumulant slices (higher-moment info set)
   boot_percentile: {n_boot: 200}
   sensitivity: {n_restarts: 24, n_perturb: 10}
   ismb: {n_boot: 200, alpha: 0.05}

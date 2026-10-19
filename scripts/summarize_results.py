@@ -127,6 +127,28 @@ count columns only through development-split calibration (`+devcal`).
 """
 
 
+def section_repair() -> str:
+    a, b = R / "e1b_cumulant_repair_pilot", R / "e2b_cumulant_stress_pilot"
+    if not (a / "e1_equal_weight_summary.csv").exists():
+        return ""
+    s1 = pd.read_csv(a / "e1_equal_weight_summary.csv").sort_values("mae")
+    out = f"""### Repair — adding fourth-order cumulant slices *(pilots, point estimates; exploratory)*
+
+Same 12 E1 cells at `n = 5000` (6 datasets each), equal-weight average:
+
+{md_table(s1, ['method', 'mae', 'bias', 'exact', 'support_f1'], nd=3)}
+"""
+    if (b / "e2_by_condition.csv").exists():
+        df = pd.read_csv(b / "e2_by_condition.csv")
+        piv = df.pivot_table(index="condition", columns="method", values="mae", sort=False).reset_index()
+        out += f"""
+Under the E2 stress conditions (10 datasets each), count MAE:
+
+{md_table(piv, ['condition'] + [c for c in ['jointdiag', 'fastica', 'jointdiag_cum'] if c in piv])}
+"""
+    return out
+
+
 def section_e2() -> str:
     p = R / "e2_pilot"
     if not (p / "e2_by_condition.csv").exists():
@@ -210,7 +232,8 @@ reconstruction does not certify multiplicity (plan p.10).
 
 
 def build() -> str:
-    parts = [section_e0(), section_e4(), section_e1(), section_e2(), section_e3(), section_e10(), section_e5_e6()]
+    parts = [section_e0(), section_e4(), section_e1(), section_repair(), section_e2(), section_e3(), section_e10(),
+             section_e5_e6()]
     return "\n".join(p for p in parts if p)
 
 

@@ -20,7 +20,7 @@ because a reviewer may prefer it.
 | M6 | Visibility: a factor is in the target only if `vis_k ≥ v_min` | `estimand.visible_mask`, ISMB visibility bands | Invisible factors are unidentifiable by differences and are excluded by definition | E2 `invisible_factors`, `unknown_K_8` |
 | M7 | Minimality / non-duplication: no factor split into copies; admissible columns have `|cos| ≤ max_abs_cos` | count of visible factors of a minimal decomposition; AR-grid admissibility | A split factor would inflate `P_j` arbitrarily | E2 `near_duplicate_columns` |
 | M8 | Threshold is closed: `|A_jk| ≥ τ` counts | `estimand.ATOL` | Ties are measure-zero except in the near-τ stress case | E2 `loadings_near_tau` |
-| M9 | Information set = second moments (centred covariances). Fourth moments are used only for *variances* of estimates | `moments.py`, `bounds/*` | Higher-moment methods (FastICA) may identify more; that is a different information set and is disclosed in `Access` | E1/E2 FastICA baseline |
+| M9 | Information set = second moments (centred covariances). Fourth moments are used only for *variances* of estimates, except in the exploratory `jointdiag_cum`, which also diagonalises 4th-order cumulant slices (requires independent latents and Gaussian, or at least zero-4th-cumulant, noise) | `moments.py`, `bounds/*`, `estimators/cumulant.py` | Higher-moment methods (FastICA, `jointdiag_cum`) identify much more in the planted generator (lab notebook §8–9); that is a different information set and is disclosed in `Access` | E1b/E2b pilots |
 
 ## S — statistical procedures
 

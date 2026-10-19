@@ -43,6 +43,7 @@ the config sets `theory_gate_passed: true`. The gate criteria are fixed in
 | `dict_learning` | no | yes | count | L1 sparse coding, `k_max` atoms |
 | `topk_sae` | no | yes | count | TopK SAE (E5/E6) |
 | `jointdiag` | yes | no | count | coroICA-style point estimate with visibility filter |
+| `jointdiag_cum` | yes | yes | count | **exploratory repair**: covariance differences + per-environment 4th-order cumulant slices (JADE-style); added after the E1 pilot, lab notebook §9 |
 | `boot_percentile` | yes | no | interval | naive bootstrap of the joint-diag count |
 | `sensitivity` | yes | no | interval | multi-start range, **no coverage claim** |
 | `ismb` (proposed) | yes | no¹ | interval + point | identified-set bounds (THEORY §4, §7) |

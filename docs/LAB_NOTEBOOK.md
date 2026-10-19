@@ -77,3 +77,22 @@ and which earlier outputs are void.
   be identified whenever the latents are independent and non-Gaussian. Proposition 2's
   co-occurrence case (dependent latents) would remain unidentified. This is recommended
   next step 1 in the README.
+
+### 9. Repair: add fourth-order cumulant slices to the joint-diagonalisation stack
+* **Implemented** `estimators/cumulant.py` (`jointdiag_cum`, exploratory, point estimate only).
+  Per-environment slices `cum(x_p, x_p, x_i, x_j)` are diagonalised by the same unmixing
+  under independent latents, and Gaussian noise contributes zero.
+* **E1b pilot** (`results/e1b_cumulant_repair_pilot`, 12 cells at `n = 5000`, 6 datasets each):
+  count MAE 0.016 (exact 0.98, support F1 0.99), vs 2.22 for second-moment joint
+  diagonalisation and 0.61 for pooled FastICA. The near-collinear failure disappears (MAE ≤ 0.06
+  in every cell), and it beats FastICA at higher activation rates where the latents are less
+  sparse.
+* **Prior art, not a novelty claim.** Combining non-stationarity of variance with
+  non-Gaussianity is established: JADE (Cardoso & Souloumiac 1993); Hyvärinen (2001),
+  *Blind source separation by nonstationarity of variance: a cumulant-based approach*;
+  Tichavský, Koldovský and colleagues' combined second- and fourth-order methods. Check them
+  before writing anything up.
+* **Not yet tested:** dependent latents (Prop. 2 still applies; cumulant tensors of dependent
+  latents are not diagonal, so the misfit may become *detectable*, which is worth testing),
+  heavy-tailed or non-Gaussian noise (noise cumulants do not vanish), and an interval version
+  (cumulant-aware pair tests inside ISMB).

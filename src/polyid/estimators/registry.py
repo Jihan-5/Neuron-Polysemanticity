@@ -33,6 +33,12 @@ def _topk_sae(cfg):
     return TopKSAECount(cfg)
 
 
+def _jd_cum(cfg):
+    from polyid.estimators.cumulant import JointDiagCumulant
+
+    return JointDiagCumulant(cfg)
+
+
 REGISTRY: dict[str, Callable] = {
     "moments": B.UnivariateMoments,
     "gmm_bic": B.GMMBIC,
@@ -44,6 +50,7 @@ REGISTRY: dict[str, Callable] = {
     "jointdiag_nofilter": lambda cfg=None: B.JointDiagCount({**(cfg or {}), "visibility_filter": False}),
     "dict_learning": B.DictLearningCount,
     "boot_percentile": B.BootstrapPercentile,
+    "jointdiag_cum": _jd_cum,
     "ismb": _ismb,
     "sensitivity": _sensitivity,
     "ar_grid": _ar_grid,

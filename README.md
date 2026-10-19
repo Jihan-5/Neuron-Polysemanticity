@@ -117,11 +117,15 @@ profiles) is measured in E2/E4 rather than assumed away.
    coverage there *falls* with `n` (0.97 → 0.83), exactly as the theory predicts. This is an
    impossibility result, not a tuning problem.
 4. **ISMB is not yet informative at `d = 16` (E1).** It stays valid (coverage 1.0), but mean
-   width is 4.7–14.7 in well-separated cells and ≈ 16 in near-collinear ones. FastICA, which
-   uses non-Gaussianity, beats every second-moment method on point accuracy in the
-   near-collinear half of the grid. Most of the identifying information in this generator is
-   in higher moments (lab notebook §8). Adding cumulant conditions is the next step.
-5. **Honest negative:** in the `d = 3` pilot the *naive* bootstrap also covered, because its
+   width is 4.7–14.7 in well-separated cells and ≈ 16 in near-collinear ones. Second moments
+   alone are weak at `d = 16, E = 6`, even though population recovery is exact (lab notebook §8).
+5. **Repair: adding fourth-order cumulant slices to the joint-diagonalisation stack** cut count
+   MAE from 2.22 (second moments) and 0.61 (FastICA) to **0.016** across the 12 cells at
+   `n = 5000`, and to ≈ 0 in 13 of 19 stress conditions. It degrades where its assumptions fail:
+   perfect co-occurrence, non-stationary or heavy-tailed noise, overcompleteness. This is a
+   point estimator with established prior art (JADE; Hyvärinen 2001; Tichavský et al.), so
+   it is not a novelty claim. Turning it into an ISMB-style bound is the next step.
+6. **Honest negative:** in the `d = 3` pilot the *naive* bootstrap also covered, because its
    replicates drift across the unidentified rotation. These pilots do **not** yet show an ISMB
    advantage over it. Where ISMB differs is that it *has* a coverage argument and reports the
    structure (which factors are merged, and why).
@@ -266,10 +270,11 @@ P2, S11–S12, S17–S27, X2–X4, X8–X9) to the module, test or experiment th
 
 ## 11. Open items
 
-0. **Add fourth-order cumulant conditions to ISMB** (top priority after the E1 pilot). FastICA's
-   accuracy where second moments fail shows the information is there. With independent
-   non-Gaussian latents this would identify collinear-profile classes. Co-occurrence would
-   stay unidentified (Prop. 2).
+0. **Cumulant-aware ISMB** (top priority). The point estimator `jointdiag_cum` already
+   resolves the weak-identification failures. The interval version needs pair tests that use
+   cumulant slices and a coverage argument for the higher-moment information set. Check
+   whether dependent latents (Prop. 2) become *detectable* with cumulants: a cumulant tensor of
+   dependent latents is not diagonal.
 1. **Statistician review** of Proposition 1, Lemma 2, Proposition 2 and the ISMB coverage
    argument (plan p.8 and syllabus S23 both flag this).
 2. **Full-scale runs:** E1 (500 reps × 24 cells), E2 (200 reps), E4 (500 reps). About a day on

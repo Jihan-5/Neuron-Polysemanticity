@@ -10,4 +10,5 @@ methods:
   fastica: {}
   dict_learning: {alpha: 0.1, max_iter: 30}
   jointdiag: {n_starts: 6}
+  jointdiag_cum: {n_starts: 6}     # exploratory: + 4th-order cumulant slices (higher-moment info set)
   ismb: {n_boot: 150, alpha: 0.05}
