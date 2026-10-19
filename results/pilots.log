@@ -1,0 +1,4 @@
+[polyid] e4_coverage_d3 finished in 946.2s -> results/e4_coverage_d3_pilot
+[polyid] summary keys: ['conditions', 'ns', 'reps', 'ar_empty_rate']
+[e1] diversity=well_separated|n_per_env=2000|noise_rel_sd=0.05|rate_center=0.05: 9 datasets
+[e1] diversity=well_separated|n_per_env=2000|noise_rel_sd=0.05|rate_center=0.15: 9 datasets

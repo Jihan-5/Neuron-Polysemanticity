@@ -44,6 +44,13 @@ STATUS = {
 SEQUENTIAL_BLUE = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
 
 
+METHOD_LINESTYLE = {"sensitivity": (0, (4, 2))}  # dashed: it often coincides with jointdiag
+
+
+def method_ls(name: str):
+    return METHOD_LINESTYLE.get(name.split("@")[0].split("+")[0], "-")
+
+
 def method_color(name: str, fallback_index: int = 0) -> str:
     base = name.split("@")[0].split("+")[0]
     return CATEGORICAL[METHOD_SLOT.get(base, fallback_index) % len(CATEGORICAL)]

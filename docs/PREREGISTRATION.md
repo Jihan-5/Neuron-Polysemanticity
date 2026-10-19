@@ -56,4 +56,14 @@ Multiple comparisons: Holm over the secondary method contrasts within each exper
 
 ## Amendments
 
-*(none yet)*
+**2026-10-19 — provenance note (please read).** This file was drafted during development, *after*
+the first E4 pilot had been run. That pilot was void because of the threshold bug in
+`docs/LAB_NOTEBOOK.md` §7. The file was written *before* the corrected E4 pilot. It is therefore
+not a preregistration in the strict sense for E4. Freeze it (commit hash in the manuscript)
+before the 500-replicate E4 and the full E1/E2 runs, which have not been run.
+
+**2026-10-19 — theory-gate status after the corrected E4 pilot (100 replicates per cell).** At
+`n = 16000`, ISMB coverage of the true `P_j` was 0.99 (identifiable) and 0.96 (collinear pair),
+with confidently-wrong rates of 0.010 and 0.037. Both meet the §3 criterion *at pilot scale*.
+Statistician review (the third bullet) is outstanding, so `theory_gate_passed` stays `false` in
+the LM configs.

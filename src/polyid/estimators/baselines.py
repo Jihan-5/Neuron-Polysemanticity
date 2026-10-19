@@ -91,6 +91,7 @@ class GMMBIC:
         cfg = cfg or {}
         self.k_max = int(cfg.get("k_max", 6))
         self.max_rows = int(cfg.get("max_rows", 5000))
+        self.n_init = int(cfg.get("n_init", 2))
 
     def fit(self, data, spec, rng):
         X = _subsample(data.X, self.max_rows, rng)
@@ -102,13 +103,13 @@ class GMMBIC:
             for k in range(1, self.k_max + 1):
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", ConvergenceWarning)
-                    gm = GaussianMixture(k, n_init=2, random_state=seed, reg_covar=1e-6).fit(x)
+                    gm = GaussianMixture(k, n_init=self.n_init, random_state=seed, reg_covar=1e-6).fit(x)
                 bics.append(gm.bic(x))
             ks[j] = int(np.argmin(bics)) + 1
         return EstimateResult(
             method=self.name, kind="count", point=np.maximum(ks - 1, 0).astype(float), score=ks.astype(float),
             access=Access(env_labels=False, higher_moments=True, n_observations=X.shape[0],
-                          model_selection_budget=self.k_max, restarts=2),
+                          model_selection_budget=self.k_max, restarts=self.n_init),
             label="proxy: mixture components - 1",
         )
 

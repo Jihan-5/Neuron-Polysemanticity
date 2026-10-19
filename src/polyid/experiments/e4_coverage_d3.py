@@ -93,9 +93,9 @@ def plot(agg: pd.DataFrame, conds: list[str], out_dir: Path) -> list[str]:
             if g.empty:
                 continue
             col = style.method_color(m, i)
-            axes[0][c].plot(g["n"], g["coverage"], marker="o", color=col, label=m)
+            axes[0][c].plot(g["n"], g["coverage"], marker="o", color=col, label=m, ls=style.method_ls(m))
             axes[0][c].fill_between(g["n"], g["coverage_lo"], g["coverage_hi"], color=col, alpha=0.12, lw=0)
-            axes[1][c].plot(g["n"], g["width_mean"], marker="o", color=col, label=m)
+            axes[1][c].plot(g["n"], g["width_mean"], marker="o", color=col, label=m, ls=style.method_ls(m))
         axes[0][c].axhline(0.95, color=style.INK_2, lw=1, ls=":")
         axes[0][c].set_ylim(0, 1.03)
         axes[0][c].set_title(cond.replace("_", " "), fontsize=10)

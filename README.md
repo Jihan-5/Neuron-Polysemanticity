@@ -6,7 +6,7 @@
 
 <p>
 <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-2a78d6">
-<img alt="tests" src="https://img.shields.io/badge/tests-103%20passing-0ca30c">
+<img alt="tests" src="https://img.shields.io/badge/tests-104%20passing-0ca30c">
 <img alt="status" src="https://img.shields.io/badge/status-research%20code%20%C2%B7%20pilots%20only-eda100">
 <img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-E0%20met%20%C2%B7%20E4%20pilot-6250d6">
 </p>
@@ -152,7 +152,7 @@ Full designs, expected patterns, stop rules and compute estimates are in
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[all]"          # numpy/scipy/sklearn + torch + transformers + pytest
-pytest -q                         # 103 tests (≈ 5 min on 4 CPU cores)
+pytest -q                         # 104 tests (≈ 5 min on 4 CPU cores)
 
 polyid list                                            # all experiments
 polyid run configs/planted/e0_theory_gate.yaml         # theory gate (≈ 8 min, 4 cores)
@@ -214,7 +214,7 @@ src/polyid/
 └── cli.py               `polyid run|list`
 configs/                 one YAML per experiment (+ smoke configs)
 docs/                    THEORY · ASSUMPTIONS · EXPERIMENT_PLAN · PREREGISTRATION · READING_MAP
-tests/                   103 tests incl. AST leakage scan, Schur–Horn exactness, rank-test size
+tests/                   104 tests incl. AST leakage scan, Schur–Horn exactness, rank-test size
 results/                 manifests, summary CSVs and figures of every run reported above
 ```
 
