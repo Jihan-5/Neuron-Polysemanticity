@@ -33,6 +33,7 @@ because a reviewer may prefer it.
 | S5 | GMS threshold `κ_n = sqrt(log n_min)` | `ISMBConfig.gms_kappa` | Pointwise valid; a predeclared tuning constant |
 | S6 | Union-bound split of α across steps: pairs 25 %, loadings 45 %, visibility 15 %, groups 15 % | `ISMBConfig.share_*` | Predeclared in `docs/PREREGISTRATION.md` |
 | S7 | Residual-dependence test is approximate (dof `E-3`) and is used only to **merge** (widen) | `rank_tests.test_pair` | Can never narrow an interval |
+| S10 | Global misfit gate: the sum of pairwise dependence statistics is treated as `χ²` with the summed dof (pairs are not independent, so this is approximate). On rejection at `1e-3`, abstain to `[0, k_max]` | `ISMBConfig.misfit_gate` | Calibrated empirically (lab notebook §11); it can only widen |
 | S8 | AR-grid: truth on the grid; `K = d = 3`, all visible; efficient weight from fourth moments; `χ²_{3(E-1)}` | `bounds/ar_grid.py` | Grid-restricted statement (plan p.8) |
 | S9 | Coverage target is **per neuron** (row-wise simultaneous over a neuron's loadings). Simultaneous-over-all-neurons coverage is also reported (`all_covered`) | `ISMBConfig.simultaneity` | `"all"` available for a family-wise claim |
 

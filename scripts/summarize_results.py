@@ -215,14 +215,17 @@ def section_e5_e6() -> str:
     p = R / "e5_pilot"
     if (p / "e5_models.csv").exists():
         models = pd.read_csv(p / "e5_models.csv")
-        m = models.groupby(["d", "feature_prob"])[["n_represented", "n_target", "overcomplete"]].mean().reset_index()
+        cols_m = ["n_represented", "n_target", "overcomplete"] + (["ismb__misfit_rejected"] if "ismb__misfit_rejected" in models else [])
+        m = models.groupby(["d", "feature_prob"])[cols_m].mean().reset_index()
+        m = m.rename(columns={"ismb__misfit_rejected": "ISMB gate fired"})
         summ = pd.read_csv(p / "e5_summary.csv")
         cols = [c for c in ["d", "feature_prob", "method", "mae", "coverage", "width_mean"] if c in summ]
         out += f"""### E5 — trained toy superposition models *(pilot: 2 seeds, 4k steps)*
 
-Represented features per regime (truth from the learned `W`):
+Represented features per regime (truth from the learned `W`; every model is overcomplete,
+which is outside the square model, so the honest outcome is abstention):
 
-{md_table(m, ['d', 'feature_prob', 'n_represented', 'n_target', 'overcomplete'])}
+{md_table(m, [c for c in ['d', 'feature_prob', 'n_represented', 'n_target', 'overcomplete', 'ISMB gate fired'] if c in m])}
 
 {md_table(summ[cols], cols)}
 """

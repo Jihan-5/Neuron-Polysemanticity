@@ -111,3 +111,22 @@ and which earlier outputs are void.
   were recomputed deterministically from the same seed paths; no estimator output changed.
 * **Partial co-occurrence is undetectable too** when rates are shared: see the corollary in
   THEORY §5.
+
+### 11. E5/E6 first pilots → an ISMB misfit gate; every pilot re-run
+* **E5 (trained toy superposition, first pilot).** Every trained model was overcomplete:
+  15–31 represented, visible features in `d = 8` or `16` dimensions, even at feature
+  probability 0.3. All `d`-component methods undercounted (bias −2 to −9). ISMB *undercovered*
+  (0.06–0.31 at `d = 8`), although its own off-diagonal misfit ratio was high (0.14–0.56).
+  Reporting a narrow interval under a visibly failing model violates plan p.7 ("bad fit is
+  evidence against assumptions, not permission to report a precise count anyway").
+* **E6 (TopK SAE, first pilot).** SAE-derived counts over-count massively (MAE 6.9–23.9, all
+  positive bias). Doubling the dictionary makes it worse (feature splitting), even at FVE 0.96.
+* **Fix: misfit gate.** The pairwise residual-dependence statistics are pooled into one
+  approximate chi-square test. On rejection at 1e-3, ISMB abstains to `[0, k_max]`.
+  Calibration on 6 datasets per condition: 0 % rejection for clean, weak-diversity, collinear,
+  unknown-`K` and 4-environment designs; 100 % for overcomplete and environment-scaled noise;
+  17 % for Student-t noise (a stationary design the model allows, so these are conservative
+  abstentions); 0 % for perfect co-occurrence (undetectable, Prop. 2).
+* **Consequence.** ISMB changed, so *every* pilot was re-run from scratch with the gate
+  (`scripts/run_pilots.sh`). Earlier pilot outputs remain in git history (commits before
+  `0e15e2d`). The README numbers come from the re-run.

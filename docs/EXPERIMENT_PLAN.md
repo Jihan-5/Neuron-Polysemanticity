@@ -46,7 +46,7 @@ the config sets `theory_gate_passed: true`. The gate criteria are fixed in
 | `jointdiag_cum` | yes | yes | count | **exploratory repair**: covariance differences + per-environment 4th-order cumulant slices (JADE-style); added after the E1 pilot, lab notebook §9 |
 | `boot_percentile` | yes | no | interval | naive bootstrap of the joint-diag count |
 | `sensitivity` | yes | no | interval | multi-start range, **no coverage claim** |
-| `ismb` (proposed) | yes | no¹ | interval + point | identified-set bounds (THEORY §4, §7) |
+| `ismb` (proposed) | yes | no¹ | interval + point | identified-set bounds (THEORY §4, §7) with a global misfit gate (abstains to `[0, k_max]` when the declared model is rejected) |
 | `ar_grid` (`d=3`) | yes | no¹ | interval | weak-ID-robust projection (THEORY §7) |
 
 ¹ fourth moments are used only to estimate the variance of second-moment statistics.
