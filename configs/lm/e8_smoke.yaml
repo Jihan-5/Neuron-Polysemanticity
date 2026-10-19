@@ -1,0 +1,16 @@
+# Offline plumbing test: random tiny GPT-NeoX + byte tokenizer + template stand-in corpus. NOT a result.
+extends: e8_pythia160m.yaml
+smoke: true
+offline: true
+device: cpu
+smoke_model: {n_layers: 3, d_model: 64, d_mlp: 256}
+layers: [1]
+n_docs: 40
+batch_size: 8
+n_score_neurons: 16
+block_size: 8
+n_blocks: 2
+score_methods: {moments: {}}
+block_methods:
+  jointdiag: {n_starts: 3}
+  ismb: {n_boot: 20}

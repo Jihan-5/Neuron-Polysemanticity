@@ -1,0 +1,4 @@
+# E8 — scale replication on frozen Pythia-410M at the same relative depths: blocks 4, 10, 16.
+extends: e8_pythia160m.yaml
+model: EleutherAI/pythia-410m
+layers: [4, 10, 16]

@@ -1,0 +1,9 @@
+extends: e9_pythia160m.yaml
+smoke: true
+device: cpu
+smoke_model: {n_layers: 3, d_model: 64, d_mlp: 256}
+ablation_layer: 1
+e8_dir: results/smoke/e8
+n_candidates: 4
+n_control_sets: 3
+max_items_per_task: 40

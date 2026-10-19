@@ -1,0 +1,4 @@
+extends: e9_pythia160m.yaml
+model: EleutherAI/pythia-410m
+ablation_layer: 10
+e8_dir: results/e8_pythia410m

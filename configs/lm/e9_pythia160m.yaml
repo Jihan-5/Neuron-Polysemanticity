@@ -1,0 +1,11 @@
+# E9 — causal validation on Pythia-160M at the middle layer (block 5).
+experiment: e9_causal_validation
+seed: 20261018
+theory_gate_passed: false
+model: EleutherAI/pythia-160m
+revision: step143000
+device: cuda
+ablation_layer: 5
+e8_dir: results/e8_pythia160m
+n_candidates: 10
+n_control_sets: 20

@@ -112,7 +112,7 @@ def train_toy(cfg: ToyConfig) -> dict:
                 Wn = W / np.maximum(np.linalg.norm(W, axis=0, keepdims=True), 1e-12)
                 stab = float(np.mean(np.sum(Wn * prev_W, axis=0))) if prev_W is not None else np.nan
                 prev_W = Wn
-            hist.append({"step": step, "train_loss": float(loss), "val_loss": vl, "W_stability": stab})
+            hist.append({"step": step, "train_loss": float(loss.detach()), "val_loss": vl, "W_stability": stab})
             if vl < best * (1 - 1e-3):
                 best, stall = vl, 0
             else:

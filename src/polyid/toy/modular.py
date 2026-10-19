@@ -140,7 +140,7 @@ def train_modular(cfg: ModularConfig) -> dict:
                 cka = linear_cka(prev_act, act) if prev_act is not None else float("nan")
                 prev_act = act
             model.train()
-            hist.append({"step": step, "loss": float(loss), "train_acc": acc_tr, "val_acc": acc_va, "cka_prev": cka})
+            hist.append({"step": step, "loss": float(loss.detach()), "train_acc": acc_tr, "val_acc": acc_va, "cka_prev": cka})
             stable = stable + 1 if acc_va >= cfg.target_val_acc else 0
             if stable >= cfg.stable_evals:
                 break

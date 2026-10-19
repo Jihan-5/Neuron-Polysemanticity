@@ -1,0 +1,8 @@
+# E6 — TopK SAE: dictionary 2d/4d x activity budgets x 3 seeds on planted data (truth known).
+extends: ../planted/base.yaml
+experiment: e6_sae_comparison
+reps: 20
+dict_mults: [2, 4]
+ks: [1, 2, 4]
+sae_seeds: 3
+max_steps: 6000

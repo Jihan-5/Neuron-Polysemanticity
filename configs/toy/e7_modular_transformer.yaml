@@ -1,0 +1,15 @@
+# E7 — optional controlled transformer bridge (GPU recommended): addition mod 97.
+experiment: e7_modular_transformer
+seed: 20261018
+spec: {tau: 0.10, v_min: 0.006, max_abs_cos: 0.98}
+model: {p: 97, d_model: 128, n_heads: 4, d_mlp: 512, n_layers: 2, train_frac: 0.8, lr: 3.0e-4,
+        batch_size: 256, max_steps: 20000, eval_every: 250, seed: 0}
+layer: 1
+n_neurons: 32
+n_envs: 6
+n_per_env: 3000
+concentration: 0.5
+methods:
+  jointdiag: {n_starts: 6}
+  ismb: {n_boot: 150}
+  gmm_bic: {k_max: 6, max_rows: 3000}

@@ -1,0 +1,24 @@
+# E8 — frozen Pythia-160M, MLP post-activations at blocks 2, 5, 8 (plan p.4). GPU recommended.
+experiment: e8_pythia_estimation
+seed: 20261018
+theory_gate_passed: false        # set to true only after E0/E4 meet the gate (docs/PREREGISTRATION.md)
+model: EleutherAI/pythia-160m
+revision: step143000
+dtype: float32
+device: cuda
+layers: [2, 5, 8]
+n_docs: 8000                     # documents per topic/encyclopedic environment (~50k contexts each at 8/doc)
+max_length: 128
+max_per_doc: 8
+batch_size: 32
+spec: {tau: 0.10, v_min: 0.006, max_abs_cos: 0.98}
+n_score_neurons: 512
+block_size: 32
+n_blocks: 16
+score_methods:
+  moments: {}
+  gmm_bic: {k_max: 6, max_rows: 4000}
+  dpmi_style: {k_max: 8, max_rows: 3000}
+block_methods:
+  jointdiag: {n_starts: 6}
+  ismb: {n_boot: 200}
