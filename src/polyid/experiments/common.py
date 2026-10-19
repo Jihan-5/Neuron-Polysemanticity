@@ -15,6 +15,7 @@ method list does not change the data.
 from __future__ import annotations
 
 import itertools
+import os
 import time
 import traceback
 from pathlib import Path
@@ -136,6 +137,29 @@ def run_planted_condition(exp: str, cond_id: str, gen_cfg: dict, methods: dict, 
                              "signed_err": float(pred[j]) - s["truth"][j]})
     rows = [r for r in rows if r.get("split") == "test"]
     return rows, datasets
+
+
+def run_condition_checkpointed(out_dir: Path, exp: str, cond_id: str, *args, **kwargs
+                               ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """:func:`run_planted_condition` with a per-condition checkpoint, so a long run can resume.
+
+    Each finished condition is written atomically to ``out_dir/_partial/``. A rerun into the same
+    directory, which the write-once manifest only allows with an identical config, loads finished
+    conditions instead of recomputing them. Seeds are namespaced by ``(exp, condition, split,
+    rep)``, so a resumed run is identical to an uninterrupted one.
+    """
+    part = Path(out_dir) / "_partial"
+    f_rows, f_ds = part / f"{cond_id}_rows.pkl", part / f"{cond_id}_datasets.pkl"
+    if f_rows.exists() and f_ds.exists():
+        return pd.read_pickle(f_rows), pd.read_pickle(f_ds)
+    rows, datasets = run_planted_condition(exp, cond_id, *args, **kwargs)
+    r, d = pd.DataFrame(rows), pd.DataFrame(datasets)
+    part.mkdir(parents=True, exist_ok=True)
+    for df, f in ((r, f_rows), (d, f_ds)):
+        tmp = f.with_name(f.name + ".tmp")
+        df.to_pickle(tmp)
+        os.replace(tmp, f)
+    return r, d
 
 
 def save_tables(out_dir: Path, name: str, rows: list[dict] | pd.DataFrame) -> Path:

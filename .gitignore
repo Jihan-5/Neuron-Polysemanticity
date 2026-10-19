@@ -21,3 +21,4 @@ hf_cache/
 .vscode/
 results/smoke/
 results/*.log
+results/**/_partial/

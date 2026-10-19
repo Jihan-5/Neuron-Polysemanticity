@@ -21,7 +21,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from polyid.experiments.common import get_methods, named_conditions, run_planted_condition, save_tables, spec_from_cfg
+from polyid.experiments.common import (get_methods, named_conditions, run_condition_checkpointed, save_tables,
+                                       spec_from_cfg)
 from polyid.metrics import aggregate
 from polyid.utils.io import write_json
 
@@ -63,13 +64,14 @@ def run(cfg: dict, out_dir: Path) -> dict:
     conds = named_conditions(cfg["generator"], cfg["conditions"])
     rows, datasets = [], []
     for cond_id, gen in conds:
-        r, d = run_planted_condition("e2", cond_id, gen, methods, spec, seed=int(cfg["seed"]), reps=int(cfg["reps"]),
-                                     dev_reps=int(cfg.get("dev_reps", 0)), n_jobs=int(cfg.get("n_jobs", -1)))
-        rows += r
-        datasets += d
+        r, d = run_condition_checkpointed(out_dir, "e2", cond_id, gen, methods, spec, seed=int(cfg["seed"]),
+                                          reps=int(cfg["reps"]), dev_reps=int(cfg.get("dev_reps", 0)),
+                                          n_jobs=int(cfg.get("n_jobs", -1)))
+        rows.append(r)
+        datasets.append(d)
         print(f"[e2] {cond_id}: {len(d)} datasets", flush=True)
-    df = pd.DataFrame(rows)
-    dsdf = pd.DataFrame(datasets)
+    df = pd.concat(rows, ignore_index=True)
+    dsdf = pd.concat(datasets, ignore_index=True)
     save_tables(out_dir, "e2_rows", df)
     save_tables(out_dir, "e2_datasets", dsdf)
     agg = aggregate(df, by=["condition", "method"])

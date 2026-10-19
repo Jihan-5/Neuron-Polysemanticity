@@ -18,7 +18,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from polyid.experiments.common import expand_grid, get_methods, run_planted_condition, save_tables, spec_from_cfg
+from polyid.experiments.common import (expand_grid, get_methods, run_condition_checkpointed, save_tables,
+                                       spec_from_cfg)
 from polyid.metrics import aggregate
 from polyid.utils.io import write_json
 
@@ -92,15 +93,16 @@ def run(cfg: dict, out_dir: Path) -> dict:
     conds = expand_grid(cfg["generator"], cfg.get("grid"))
     rows, datasets = [], []
     for cond_id, gen in conds:
-        r, d = run_planted_condition("e1", cond_id, gen, methods, spec, seed=int(cfg["seed"]), reps=int(cfg["reps"]),
-                                     dev_reps=int(cfg.get("dev_reps", 0)), n_jobs=int(cfg.get("n_jobs", -1)),
-                                     taus=cfg.get("taus"))
-        rows += r
-        datasets += d
+        r, d = run_condition_checkpointed(out_dir, "e1", cond_id, gen, methods, spec, seed=int(cfg["seed"]),
+                                          reps=int(cfg["reps"]), dev_reps=int(cfg.get("dev_reps", 0)),
+                                          n_jobs=int(cfg.get("n_jobs", -1)), taus=cfg.get("taus"))
+        rows.append(r)
+        datasets.append(d)
         print(f"[e1] {cond_id}: {len(d)} datasets", flush=True)
-    df = split_condition(pd.DataFrame(rows))
+    df = split_condition(pd.concat(rows, ignore_index=True))
+    del rows
     save_tables(out_dir, "e1_rows", df)
-    save_tables(out_dir, "e1_datasets", pd.DataFrame(datasets))
+    save_tables(out_dir, "e1_datasets", pd.concat(datasets, ignore_index=True))
     agg = split_condition(aggregate(df, by=["condition", "method"]))
     save_tables(out_dir, "e1_by_condition", agg)
     overall = equal_weight_summary(agg, ["mae", "bias", "exact", "coverage", "all_covered", "width_mean",
