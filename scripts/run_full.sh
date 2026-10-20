@@ -27,8 +27,11 @@ Claude-Session: https://claude.ai/code/session_01Eh23LNGMGuEVsg8tLV7S5u"
 
 run() {  # name, config, summary file that marks completion
   if [ -f "results/$1/$3" ]; then echo "[run_full] skip $1 (done)"; publish "$1"; return; fi
+  # work in an ignored staging dir (results/.running/) and move into place only when complete,
+  # so a half-finished run never looks like a result
   echo "[run_full] $(date -u +%FT%TZ) start $1"
-  $P run "$2" --out "results/$1"
+  $P run "$2" --out "results/.running/$1"
+  rm -rf "results/$1" && mv "results/.running/$1" "results/$1"
   echo "[run_full] $(date -u +%FT%TZ) done $1"
   publish "$1"
 }

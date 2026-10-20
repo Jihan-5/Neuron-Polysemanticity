@@ -22,3 +22,4 @@ hf_cache/
 results/smoke/
 results/*.log
 results/**/_partial/
+results/.running/
