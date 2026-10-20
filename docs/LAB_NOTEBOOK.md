@@ -158,3 +158,19 @@ and which earlier outputs are void.
   4). E11 (`configs/planted/e11_cumulant_ismb.yaml`) compares it with ISMB on the same datasets,
   across all 19 E2 stress conditions plus six near-Gaussian ones.
 
+
+### 13. E11 pilot (6 datasets × 25 conditions): `ismb_cum` narrows sharply, and one narrow-and-wrong case
+* **Coverage** of the true $P_j$ was 1.00 in 24 of 25 conditions for both methods.
+* **Width** fell from ISMB's 6–16 to 0.1–1.2 in every condition where latents are non-Gaussian:
+  clean 6.1 → 0.08, weak diversity 15.1 → 0.26, 3 environments 15.9 → 0.42, collinear pair
+  6.8 → 0.18, perfect co-occurrence 7.4 → 1.19.
+* **Near-Gaussian latents:** width returned to ISMB's level (g = 0.9: 5.8 vs 6.3; g = 1.0: 4.2 vs
+  4.9), which is the intended fallback.
+* **Misspecified noise and overcomplete models:** both methods abstain to `[0, 16]` (environment-
+  scaled and heteroscedastic noise, `overcomplete_24`). Student-t noise: 11.8 vs 13.8.
+* **The exception: `noise_correlated_stationary`, replicate 3.** Two neurons got point intervals
+  `[4, 4]` and `[3, 3]` for true counts 5 and 4: confidently wrong. ISMB gave `[2, 16]` for both.
+  In that dataset only 15 of 16 components were sure-visible. The likely mechanism is a weakly
+  visible factor poorly estimated by the combined fit, with a bootstrap band too narrow for its
+  error. This is the failure the method must not have. The full E11 (100 datasets per condition)
+  measures its rate before any claim is made.
