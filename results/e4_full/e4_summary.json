@@ -1,0 +1,27 @@
+{
+  "conditions": [
+    "identifiable",
+    "weak_diversity",
+    "collinear_pair",
+    "cooccurrence_perfect"
+  ],
+  "ns": [
+    1000,
+    4000,
+    16000
+  ],
+  "reps": 500,
+  "figures": [
+    "results/.running/e4_full/e4_coverage_width_d3.png",
+    "results/.running/e4_full/e4_identification_map_ismb.png",
+    "results/.running/e4_full/e4_identification_map_boot_percentile.png",
+    "results/.running/e4_full/e4_identification_map_jointdiag.png",
+    "results/.running/e4_full/e4_identification_map_ar_grid.png"
+  ],
+  "ar_empty_rate": {
+    "collinear_pair": 0.023333333333333334,
+    "cooccurrence_perfect": 0.5686666666666667,
+    "identifiable": 0.03,
+    "weak_diversity": 0.008
+  }
+}
