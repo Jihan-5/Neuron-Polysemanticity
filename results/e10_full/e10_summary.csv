@@ -1,0 +1,4 @@
+strategy,width,coverage,all_covered,n_groups
+adaptive,2.78625,1.0,1.0,0.74
+balanced,3.2075,1.0,1.0,0.54
+random,3.33625,1.0,1.0,0.86

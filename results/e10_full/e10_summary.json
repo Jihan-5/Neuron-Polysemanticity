@@ -1,0 +1,29 @@
+{
+  "summary": [
+    {
+      "strategy": "adaptive",
+      "width": 2.78625,
+      "coverage": 1.0,
+      "all_covered": 1.0,
+      "n_groups": 0.74
+    },
+    {
+      "strategy": "balanced",
+      "width": 3.2075,
+      "coverage": 1.0,
+      "all_covered": 1.0,
+      "n_groups": 0.54
+    },
+    {
+      "strategy": "random",
+      "width": 3.33625,
+      "coverage": 1.0,
+      "all_covered": 1.0,
+      "n_groups": 0.86
+    }
+  ],
+  "figures": [
+    "results/e10_full/e10_adaptive_envs.png"
+  ],
+  "reps": 100
+}
