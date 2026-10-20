@@ -264,9 +264,35 @@ reconstruction does not certify multiplicity (plan p.10).
     return out
 
 
+def section_e11() -> str:
+    p, lab = pick("e11_full", "e11_pilot", "e11_by_condition.csv")
+    if not (p / "e11_by_condition.csv").exists():
+        return ""
+    df = pd.read_csv(p / "e11_by_condition.csv", keep_default_na=False, na_values=[""])
+    order = list(dict.fromkeys(df.condition))
+    iv = df[df.method.isin(["ismb", "ismb_cum"])]
+    piv = iv.pivot(index="condition", columns="method", values=["coverage", "all_covered", "confidently_wrong",
+                                                                 "width_mean"]).reindex(order)
+    piv.columns = [f"{b}:{a}" for a, b in piv.columns]
+    piv = piv.reset_index()
+    cols = ["condition", "ismb:coverage", "ismb_cum:coverage", "ismb_cum:all_covered", "ismb_cum:confidently_wrong",
+            "ismb:width_mean", "ismb_cum:width_mean"]
+    reps = cfg_of(p).get("reps", "?")
+    return f"""### E11 — cumulant-aware ISMB (`ismb_cum`) vs ISMB *({lab}: {reps} datasets per condition; exploratory, higher-moment information set)*
+
+Same datasets for both methods. The 19 E2 stress conditions plus near-Gaussian latents
+(`gaussianity_g`: a share `g` of each latent's variance replaced by a Gaussian, which leaves the truth
+unchanged and weakens fourth-order information).
+
+{md_table(piv, [c for c in cols if c in piv], nd=3)}
+
+<p align="center"><img src="{rel(p)}/e11_ismb_vs_ismb_cum.png" width="96%"></p>
+"""
+
+
 def build() -> str:
-    parts = [section_e0(), section_e4(), section_e1(), section_repair(), section_e2(), section_e3(), section_e10(),
-             section_e5_e6()]
+    parts = [section_e0(), section_e4(), section_e1(), section_repair(), section_e2(), section_e11(), section_e3(),
+             section_e10(), section_e5_e6()]
     return "\n".join(p for p in parts if p)
 
 

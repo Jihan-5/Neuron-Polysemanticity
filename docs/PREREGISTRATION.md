@@ -67,3 +67,12 @@ before the 500-replicate E4 and the full E1/E2 runs, which have not been run.
 with confidently-wrong rates of 0.010 and 0.037. Both meet the §3 criterion *at pilot scale*.
 Statistician review (the third bullet) is outstanding, so `theory_gate_passed` stays `false` in
 the LM configs.
+
+**2026-10-20 — theory-gate status after the full E4 run (500 replicates per cell).** At
+`n = 16000`, ISMB coverage of the true `P_j` was 0.998 [0.992, 1.000] (identifiable) and 0.988
+[0.981, 0.995] (collinear pair), with confidently-wrong rates of 0.002 and 0.011. The E4
+criterion of §3 is met at full scale. The statistician review (third bullet) is still
+outstanding, so `theory_gate_passed` stays `false`. The full E1/E2 runs used the configs as
+committed before they started (commits `0bc3f14` and earlier); no setting was changed after
+seeing their results.
+
