@@ -21,6 +21,7 @@ Interval methods compared on identical datasets:
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -114,9 +115,20 @@ def run(cfg: dict, out_dir: Path) -> dict:
     spec = spec_from_cfg(cfg)
     methods = get_methods(cfg)
     conds = {name: deep_merge(cfg["generator"], over or {}) for name, over in cfg["conditions"].items()}
-    jobs = [(c, n, r) for c in conds for n in cfg["ns"] for r in range(int(cfg["reps"]))]
-    out = Parallel(n_jobs=int(cfg.get("n_jobs", -1)), backend="loky")(
-        delayed(_rep)(c, conds[c], int(n), r, cfg, methods, spec) for c, n, r in jobs)
+    out = []
+    for c in conds:  # one checkpoint per condition, so a long run resumes where it stopped
+        ck = out_dir / "_partial" / f"{c}.pkl"
+        if ck.exists():
+            out += pd.read_pickle(ck)
+            continue
+        jobs = [(n, r) for n in cfg["ns"] for r in range(int(cfg["reps"]))]
+        res = Parallel(n_jobs=int(cfg.get("n_jobs", -1)), backend="loky")(
+            delayed(_rep)(c, conds[c], int(n), r, cfg, methods, spec) for n, r in jobs)
+        ck.parent.mkdir(parents=True, exist_ok=True)
+        pd.to_pickle(res, ck.with_name(ck.name + ".tmp"))
+        os.replace(ck.with_name(ck.name + ".tmp"), ck)
+        out += res
+        print(f"[e4] {c}: {len(res)} datasets", flush=True)
     df = pd.DataFrame([row for rows, _ in out for row in rows])
     info = pd.DataFrame([i for _, i in out])
     save_tables(out_dir, "e4_rows", df)
