@@ -15,6 +15,12 @@ def _ismb(cfg):
     return ISMB(cfg)
 
 
+def _ismb_cum(cfg):
+    from polyid.bounds.ismb import ISMB
+
+    return ISMB({**(cfg or {}), "cumulants": True})
+
+
 def _sensitivity(cfg):
     from polyid.bounds.sensitivity import SensitivityRange
 
@@ -52,6 +58,7 @@ REGISTRY: dict[str, Callable] = {
     "boot_percentile": B.BootstrapPercentile,
     "jointdiag_cum": _jd_cum,
     "ismb": _ismb,
+    "ismb_cum": _ismb_cum,
     "sensitivity": _sensitivity,
     "ar_grid": _ar_grid,
     "topk_sae": _topk_sae,

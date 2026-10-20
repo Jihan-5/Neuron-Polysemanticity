@@ -1,4 +1,4 @@
-"""Experiment runners E0–E10. Each module exposes ``run(cfg: dict, out_dir: Path) -> dict``."""
+"""Experiment runners E0–E11. Each module exposes ``run(cfg: dict, out_dir: Path) -> dict``."""
 
 EXPERIMENTS = {
     "e0_theory_gate": "polyid.experiments.e0_theory_gate",
@@ -12,4 +12,5 @@ EXPERIMENTS = {
     "e8_pythia_estimation": "polyid.experiments.e8_pythia_estimation",
     "e9_causal_validation": "polyid.experiments.e9_causal_validation",
     "e10_adaptive_envs": "polyid.experiments.e10_adaptive_envs",
+    "e11_cumulant_ismb": "polyid.experiments.e11_cumulant_ismb",
 }

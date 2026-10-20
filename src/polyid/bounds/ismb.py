@@ -102,6 +102,11 @@ class ISMBConfig:
     abstain_width: int = 1
     misfit_gate: bool = True  # abstain to [0, k_max] when the declared model is globally rejected
     misfit_alpha: float = 1e-3
+    # ---- cumulant-aware variant ("ismb_cum"; higher-moment information set, see module docstring)
+    cumulants: bool = False
+    share_gauss: float = 0.10  # taken out of share_pairs when cumulants=True
+    cum_dependence: bool = True  # cross-cumulant dependence test (span-merge flagged pairs)
+    cum_max_rows: int = 20000  # rows per environment used for cumulant slices
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "ISMBConfig":
@@ -156,16 +161,132 @@ def _offdiag_ratio(B: np.ndarray, D: np.ndarray) -> float:
     return float(np.sqrt(max(off, 0.0) / max(np.sum(T**2), 1e-300)))
 
 
+def _cum_slices_weighted(X: np.ndarray, w: np.ndarray | None = None) -> np.ndarray:
+    """Slices ``cum(x_p, x_p, x_i, x_j)`` of the (weighted) fourth-order cumulant of ``X``."""
+    if w is not None:
+        keep = w > 0
+        X, w = X[keep], w[keep]
+    else:
+        w = np.ones(X.shape[0])
+    W = w.sum()
+    Xc = X - (w @ X) / W
+    Xw = Xc * w[:, None]
+    C = Xw.T @ Xc / W
+    d = X.shape[1]
+    out = np.empty((d, d, d))
+    for p in range(d):
+        M4 = (Xw * (Xc[:, p] ** 2)[:, None]).T @ Xc / W
+        S = M4 - C[p, p] * C - 2.0 * np.outer(C[:, p], C[p, :])
+        out[p] = 0.5 * (S + S.T)
+    return out
+
+
+def _cum_stack(data: ObservedData, E: int, rows: list[np.ndarray], w: np.ndarray | None = None) -> np.ndarray:
+    """Per-environment cumulant slices, ``E * d`` symmetric matrices (unnormalised)."""
+    mats = []
+    for e in range(E):
+        idx = rows[e]
+        mats.append(_cum_slices_weighted(data.X[idx], None if w is None else w[idx]))
+    return np.concatenate(mats)
+
+
+def _noise_scales(data: ObservedData, E: int, rows: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    """Scalar sampling-noise scale of each covariance (per environment) and each cumulant slice.
+
+    Matrices are weighted by ``1 / scale`` (precision weighting). Unit-norm weighting would give
+    a pure-noise cumulant slice (near-Gaussian latents) the same pull as an informative one.
+    Scale = RMS over entries of the plug-in standard error of the entry.
+    """
+    s_cov = np.empty(E)
+    s_cum = []
+    for e in range(E):
+        Xc = data.X[rows[e]]
+        Xc = Xc - Xc.mean(axis=0)
+        n = Xc.shape[0]
+        X2 = Xc**2
+        C = Xc.T @ Xc / n
+        s_cov[e] = np.sqrt(np.mean(np.maximum(X2.T @ X2 / n - C**2, 0)) / n)
+        for p in range(Xc.shape[1]):
+            w2 = X2[:, p]
+            m = (Xc * w2[:, None]).T @ Xc / n  # E[x_p^2 x_i x_j]
+            m2 = (X2 * (w2**2)[:, None]).T @ X2 / n  # E[x_p^4 x_i^2 x_j^2]
+            s_cum.append(np.sqrt(np.mean(np.maximum(m2 - m**2, 0)) / n))
+    return np.maximum(s_cov, 1e-300), np.maximum(np.array(s_cum), 1e-300)
+
+
+def _fourth_cumulant_test(x: np.ndarray, env: np.ndarray, E: int) -> float:
+    """p-value of H0: excess fourth cumulant is 0 in every environment (component is Gaussian).
+
+    Per environment, the delta-method influence function of ``k4 = m4 - 3 m2^2`` gives a
+    standard error; the sum of squared z-scores is referred to chi^2_E. Approximate: the
+    unmixing matrix is treated as known and clusters are ignored.
+    """
+    W = 0.0
+    for e in range(E):
+        u = x[env == e]
+        u = u - u.mean()
+        m2, m3, m4 = np.mean(u**2), np.mean(u**3), np.mean(u**4)
+        k4 = m4 - 3 * m2**2
+        infl = u**4 - m4 - 4 * m3 * u - 6 * m2 * (u**2 - m2)
+        se = np.std(infl) / np.sqrt(u.size)
+        W += (k4 / max(se, 1e-300)) ** 2
+    return float(stats.chi2.sf(W, E))
+
+
+def _cross_cumulant_test(a: np.ndarray, b: np.ndarray, env: np.ndarray, E: int) -> float:
+    """p-value of H0: ``cum(a, a, b, b) = 0`` in every environment (independent components).
+
+    Insensitive to first-order unmixing error (an error ``eps`` enters at order ``eps^2``), so
+    it can flag dependent latents that second moments cannot see (Proposition 2).
+    """
+    W = 0.0
+    for e in range(E):
+        x, y = a[env == e], b[env == e]
+        x, y = x - x.mean(), y - y.mean()
+        ma, mb, mab = np.mean(x**2), np.mean(y**2), np.mean(x * y)
+        m22 = np.mean(x**2 * y**2)
+        k = m22 - ma * mb - 2 * mab**2
+        infl = (x**2 * y**2 - m22) - mb * (x**2 - ma) - ma * (y**2 - mb) - 4 * mab * (x * y - mab)
+        se = np.std(infl) / np.sqrt(x.size)
+        W += (k / max(se, 1e-300)) ** 2
+    return float(stats.chi2.sf(W, E))
+
+
 def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.random.Generator) -> ISMBFit:
     tau, v_min = spec.tau, spec.v_min
     ms = compute_moment_stats(data, with_covariance=False)
     E, d = ms.n_envs, ms.d
-    best, runs = fit_joint_diag(ms.D, ms.pooled, n_starts=cfg.n_starts, rng=rng)
+    use_cum = bool(cfg.cumulants)
+    if use_cum:
+        # same unmixing diagonalises covariance differences and every cumulant slice under the
+        # declared model with independent latents; each matrix is scaled by its full-sample norm
+        rows = []
+        for e in range(E):
+            idx = np.flatnonzero(data.env == e)
+            if idx.size > cfg.cum_max_rows:
+                idx = np.sort(rng.choice(idx, size=cfg.cum_max_rows, replace=False))
+            rows.append(idx)
+        K4 = _cum_stack(data, E, rows)
+        # precision weighting (see _noise_scales); fixed at full-sample values for the bootstrap
+        d_norm, k_norm = _noise_scales(data, E, rows)
+        stack = np.concatenate([ms.D / d_norm[:, None, None], K4 / k_norm[:, None, None]])
+    else:
+        stack = ms.D
+    best, runs = fit_joint_diag(stack, ms.pooled, n_starts=cfg.n_starts, rng=rng)
     A_n, norms = normalize_columns(best.A)
     B_n = norms[:, None] * best.V
     K = A_n.shape[1]
     prof = _profiles(B_n, ms.D)
     U = data.X @ B_n.T  # unmixed signals, one column per estimated component
+    U2 = U
+    if use_cum:
+        # The second-moment pair and misfit tests assume a basis fitted to the covariance stack
+        # alone; the combined fit is a compromise with the (noisier) cumulant slices and leaves
+        # second-moment residuals the tests would read as misfit. Run those tests on a
+        # second-moment refinement warm-started from the combined solution (same component order).
+        jd2, _ = fit_joint_diag(ms.D, ms.pooled, init=best.V, max_iter=300)
+        _, nrm2 = normalize_columns(jd2.A)
+        U2 = data.X @ (nrm2[:, None] * jd2.V).T
 
     # --------------------------------------------- visibility (analytic, per component)
     a_vis = cfg.alpha * cfg.share_visibility
@@ -183,23 +304,37 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
     pairs = [(sure[i], sure[j]) for i in range(len(sure)) for j in range(i + 1, len(sure))]
     n_pairs = max(len(pairs), 1)
     corr = n_pairs if cfg.pair_correction == "bonferroni" else 1
-    a_pair = cfg.alpha * cfg.share_pairs / corr
+    share_pairs = cfg.share_pairs - (cfg.share_gauss if use_cum else 0.0)
+    a_pair = cfg.alpha * share_pairs / corr
     a_dep = cfg.dependence_alpha / corr
+    gauss_p = np.full(K, np.nan)
+    if use_cum:
+        # a collinear pair stays identified by fourth cumulants unless BOTH components are
+        # Gaussian (at most one Gaussian source per group is identifiable, Comon 1994)
+        a_gauss = cfg.alpha * cfg.share_gauss / max(len(sure), 1)
+        for k in sure:
+            gauss_p[k] = _fourth_cumulant_test(U[:, k], data.env, E)
     uf = UnionFind(K)
     span_edges: set = set()
+    cum_dep_edges: set = set()
     tests = []
     for k, l in pairs:
-        t = test_pair(U[:, k], U[:, l], data.env, E, k, l, data.cluster)
+        t = test_pair(U2[:, k], U2[:, l], data.env, E, k, l, data.cluster)
         tests.append(t)
         if t.collinear_p >= a_pair:
-            uf.union(k, l)
+            if not use_cum or (gauss_p[k] >= a_gauss and gauss_p[l] >= a_gauss):
+                uf.union(k, l)
         if cfg.dependence_merge and t.dependence_p < a_dep:
             uf.union(k, l)
             span_edges.add((k, l))
+        if use_cum and cfg.cum_dependence and _cross_cumulant_test(U[:, k], U[:, l], data.env, E) < a_dep:
+            uf.union(k, l)
+            span_edges.add((k, l))
+            cum_dep_edges.add((k, l))
     comps = uf.groups(sure)
     groups = [g for g in comps if len(g) > 1]
     singletons = sorted([g[0] for g in comps if len(g) == 1] + ambiguous)
-    group_joint_p = [group_rank1_pvalue(U[:, G], data.env, E, data.cluster) for G in groups]
+    group_joint_p = [group_rank1_pvalue(U2[:, G], data.env, E, data.cluster) for G in groups]
 
     # ------------------------------------------------------------------- bootstrap
     nb = cfg.n_boot
@@ -210,7 +345,12 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
         w = bootstrap_weights(data, rng)
         C, _, _ = env_covariances(data.X, data.env, E, weights=w)
         D = centered_stack(C)
-        jd, _ = fit_joint_diag(D, C.mean(axis=0), init=best.V, max_iter=300)
+        if use_cum:
+            Kb = _cum_stack(data, E, rows, w)
+            stack_b = np.concatenate([D / d_norm[:, None, None], Kb / k_norm[:, None, None]])
+        else:
+            stack_b = D
+        jd, _ = fit_joint_diag(stack_b, C.mean(axis=0), init=best.V, max_iter=300)
         Ab, nrm = normalize_columns(jd.A)
         pb = _profiles(nrm[:, None] * jd.V, D)
         Ab_al, perm, cosv = align_to_reference(Ab, A_n)
@@ -330,7 +470,11 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
         "misfit_p": misfit_p,
         "misfit_rejected": misfit_rejected,
         "alpha": cfg.alpha,
+        "cumulants": use_cum,
     }
+    if use_cum:
+        diag["n_nongaussian"] = int(np.sum(gauss_p[sure] < a_gauss)) if sure else 0
+        diag["n_cum_dependence_flags"] = len(cum_dep_edges)
     return ISMBFit(
         A_hat=A_n, B_hat=B_n, profiles=prof, vis=vis, vis_lo=vis_lo, vis_hi=vis_hi, vis_status=vis_status,
         groups=groups, group_modes=group_modes, pair_tests=tests, load_lo=load_lo, load_hi=load_hi,
@@ -345,6 +489,8 @@ class ISMB:
 
     def __init__(self, cfg: ISMBConfig | dict | None = None):
         self.cfg = cfg if isinstance(cfg, ISMBConfig) else ISMBConfig.from_dict(cfg)
+        if self.cfg.cumulants:
+            self.name = "ismb_cum"
 
     def fit(self, data: ObservedData, spec: EstimandSpec, rng: np.random.Generator) -> EstimateResult:
         f = fit_ismb(data, spec, self.cfg, rng)
@@ -355,9 +501,13 @@ class ISMB:
         return EstimateResult(
             method=self.name, kind="interval", point=f.point.astype(float), lower=f.lower.astype(float),
             upper=f.upper.astype(float), loadings=f.A_hat,
-            label=f"confidence(asymptotic, alpha={self.cfg.alpha}, conditions in bounds/ismb.py)",
-            access=Access(env_labels=True, higher_moments=False, n_observations=data.n,
-                          restarts=self.cfg.n_starts, notes=f"bootstrap={self.cfg.n_boot}; fourth moments used only for variances"),
+            label=(f"confidence(asymptotic, alpha={self.cfg.alpha}, conditions in bounds/ismb.py)"
+                   + ("; exploratory higher-moment variant" if self.cfg.cumulants else "")),
+            access=Access(env_labels=True, higher_moments=bool(self.cfg.cumulants), n_observations=data.n,
+                          restarts=self.cfg.n_starts,
+                          notes=f"bootstrap={self.cfg.n_boot}; " + (
+                              "fourth-order cumulant slices in the stack, Gaussianity and cross-cumulant tests"
+                              if self.cfg.cumulants else "fourth moments used only for variances")),
             diagnostics=diag,
         )
 

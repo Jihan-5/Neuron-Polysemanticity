@@ -103,6 +103,10 @@ class PlantedConfig:
     shared_rates_in_switch_blocks: bool = True
     magnitude_corr_blocks: list = field(default_factory=list)
     magnitude_corr: float = 0.0
+    # share of each latent's (per-environment) variance replaced by an independent Gaussian of the
+    # same variance: second moments, loadings and P_j are unchanged, fourth cumulants scale by
+    # (1 - g)^2. Stresses higher-moment methods (weak identification as g -> 1); 0 = off.
+    latent_gaussianity: float = 0.0
     # noise
     noise_rel_sd: float = 0.05
     noise_mode: str = "iid"
@@ -417,7 +421,15 @@ def sample_latents(cfg: PlantedConfig, p_e: np.ndarray, n: int, rng: np.random.G
     b = g < stats.norm.ppf(p_e)[None, :]
     h = _equicorrelated_normals(n, K, cfg.magnitude_corr_blocks, cfg.magnitude_corr, rng)
     s = cfg.mag_low + (cfg.mag_high - cfg.mag_low) * stats.norm.cdf(h)
-    return b * s
+    z = b * s
+    g_share = float(cfg.latent_gaussianity)
+    if g_share > 0:  # no extra draws when off, so default datasets are unchanged
+        lo, hi = cfg.mag_low, cfg.mag_high
+        m1, m2 = (lo + hi) / 2, (lo * lo + lo * hi + hi * hi) / 3  # uniform magnitude moments
+        p = np.asarray(p_e, dtype=float)[None, :]
+        mean, var = p * m1, p * m2 - (p * m1) ** 2
+        z = mean + math.sqrt(1 - g_share) * (z - mean) + math.sqrt(g_share) * np.sqrt(var) * rng.standard_normal(z.shape)
+    return z
 
 
 def generate(

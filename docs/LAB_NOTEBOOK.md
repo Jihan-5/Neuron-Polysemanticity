@@ -130,3 +130,31 @@ and which earlier outputs are void.
 * **Consequence.** ISMB changed, so *every* pilot was re-run from scratch with the gate
   (`scripts/run_pilots.sh`). Earlier pilot outputs remain in git history (commits before
   `0e15e2d`). The README numbers come from the re-run.
+
+## 2026-10-20
+
+### 12. Cumulant-aware ISMB (`ismb_cum`): two failures before it worked
+* **Design** (THEORY §8). Fourth-order cumulant slices are added to the joint-diagonalisation
+  stack. A collinear pair is merged only if neither member is detectably non-Gaussian. A
+  cross-cumulant test span-merges dependent pairs.
+* **Failure 1: the misfit gate fired on every dataset.** On 4 datasets each of clean,
+  collinear-pair, near-collinear and perfect co-occurrence data (`d = 16`, `n = 5000`), it
+  abstained to `[0, 16]` every time. ISMB's second-moment pair, dependence and misfit tests
+  assume a basis fitted to the covariance stack. The combined basis is a compromise with the
+  noisier cumulant slices, and leaves second-moment residuals those tests read as misfit.
+  *Fix:* run them on a second-moment refinement warm-started from the combined solution (D14).
+  Widths then fell to 0.0–1.2, with every interval covering.
+* **Failure 2: near-Gaussian latents made it far wider than ISMB.** With a collinear pair and
+  `latent_gaussianity` 0.9 or 1.0, width was ≈ 15.4 against ISMB's 5.0–6.6, although coverage
+  held. Each cumulant slice had been scaled to unit norm, so 96 near-pure-noise slices
+  outweighed 15 informative covariance differences. *Fix:* precision weighting (D13). Widths at
+  g = 0.5 / 0.9 / 1.0 fell from 5.4 / 15.3 / 15.6 to 1.0 / 5.0 / 5.3: graceful fallback to ISMB.
+* **Checks.** With `cumulants` off, ISMB output is byte-identical to the committed version on
+  three seeded datasets (clean, collinear, perfect co-occurrence), so the full-scale E2/E1 runs
+  that import the edited module are unaffected. `latent_gaussianity = 0` leaves generated data
+  identical. Both new tests have size 2–9 % at the 5 % level and strong power
+  (`tests/test_ismb_cum.py`).
+* **Status.** Exploratory, and validated so far only on these 28 hand-run datasets (7 settings ×
+  4). E11 (`configs/planted/e11_cumulant_ismb.yaml`) compares it with ISMB on the same datasets,
+  across all 19 E2 stress conditions plus six near-Gaussian ones.
+

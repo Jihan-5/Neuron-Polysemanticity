@@ -240,3 +240,55 @@ the identified set. The statement is grid-restricted, as the plan requires.
   is the surrogate on which it would apply; linking it back to $P_j$ is open.
 * Anything about semantic concepts. $P_j$ is statistical loading multiplicity under a
   declared model.
+
+## 8. Cumulant-aware ISMB (`ismb_cum`): a different information set
+
+Second moments cannot separate two factors whose variance profiles are collinear
+(Proposition 1). Fourth-order cumulants can. Under the declared model with independent latents
+$z_k$ and Gaussian noise, every per-environment slice of the fourth-order cumulant tensor of
+$h$ is
+
+$$\mathcal C_4^{(e)}(e_p e_p^\top) = A\,\operatorname{diag}\big(\kappa_k^{(e)} a_{pk}^2\big)A^\top,$$
+
+so it is diagonalised by the same unmixing matrix as the centred covariances. Gaussian noise
+contributes nothing, whether stationary or not. Within a group of factors whose second-moment
+profiles are collinear, the rotation left free by Proposition 1 is pinned down unless **two or
+more** members of the group are Gaussian in every environment. This is the identifiability
+condition of ICA (Comon 1994): at most one Gaussian source per unidentified block.
+
+`ismb_cum` changes ISMB in four places. Everything else (visibility bands, loading bands,
+Schur–Horn group ranges, misfit gate) is unchanged.
+
+1. **Basis.** The covariance differences and the $E \cdot d$ cumulant slices are diagonalised
+   jointly. Each matrix is weighted by the inverse of its estimated sampling-noise scale
+   (precision weighting). Unit-norm weighting, the first choice, gave pure-noise slices full
+   weight when latents are near-Gaussian, and widened intervals to near-trivial (lab notebook §12).
+2. **Merge rule.** A pair with collinear second-moment profiles is merged only if a test of
+   "excess fourth cumulant = 0 in every environment" fails to reject for **both** members. The
+   test sums squared delta-method $z$-scores over environments and is referred to $\chi^2_E$.
+   Its level is `share_gauss`, Bonferroni over components, taken out of ISMB's pair-test share.
+   A wrong decision to trust identification therefore costs at most that share of $\alpha$.
+3. **Dependence.** For every pair, a cross-cumulant test of $\operatorname{cum}(u_k,u_k,u_l,u_l)=0$
+   in every environment. It is insensitive to first-order unmixing error, because an error
+   $\varepsilon$ enters at order $\varepsilon^2$. Pairs it flags are merged under the span
+   (correlated) outer bound, which only widens. This is how the co-occurrence of
+   **Proposition 2**, invisible to every second-moment method, becomes detectable: a shared
+   switch makes $\operatorname{cum}(z_k,z_k,z_l,z_l) \neq 0$.
+4. **Second-moment tests on a second-moment basis.** The pairwise collinearity, dependence and
+   misfit tests were derived for a basis fitted to the covariance stack. The combined fit is a
+   compromise, and its second-moment residuals made the misfit gate fire on clean data. The
+   tests are therefore run on a second-moment refinement warm-started from the combined
+   solution.
+
+**What its coverage rests on.** Conditions (a)–(e) of §7, with (b) replaced by: every truly
+unidentified pair is merged, unless the Gaussianity test wrongly rejects (level `share_gauss`).
+(c) now reads: factors separated *by cumulants* are strongly identified. That fails
+non-uniformly as latents approach Gaussianity, the fourth-order analogue of the Stoye regime.
+E11 measures it with `latent_gaussianity` ∈ {0.5, 0.9, 1.0}. A Gaussian or heavy-tailed
+**noise** misspecification (e.g. Student-t noise) contaminates the cumulant slices. The
+procedure then widens through merges or the misfit gate, but nothing guarantees it does. E11
+reports `noise_student_t`.
+
+**Status: exploratory.** It uses a higher-moment information set (`Access.higher_moments`). It
+is a different estimator, compared side by side with ISMB, and the statistician review that
+gates ISMB's claims (preregistration §3) applies to it too.
