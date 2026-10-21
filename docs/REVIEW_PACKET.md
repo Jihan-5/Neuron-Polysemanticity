@@ -25,7 +25,7 @@ honest uncertainty when it cannot be pinned down.
 | 3 | **Proposition 2 and corollary**: perfect co-occurrence (shared activity switch), and any exchangeable within-block dependence with shared rates, is observationally equivalent under second moments to an uncorrelated model with different loadings | THEORY §5 | Numerically confirmed (E2, E4: ISMB coverage falls with `n` in this cell, 0.96 → 0.87) |
 | 4 | **Remark 3**: the pairwise Cragg–Donald rank-1 test of profile collinearity is first-order robust to estimating the pair subspace | THEORY §6 | Empirical size 5.5 % at nominal 5 %, power 0.95 |
 | 5 | **ISMB coverage**: `P(L_j ≤ P_j ≤ U_j ∀ j) → ≥ 1 − α` under conditions (a)–(e) | THEORY §7 | Full runs: coverage ≥ 0.988 in identified and collinear cells (E4, 500 reps); 1.00 in all 19 stress conditions (E2, 200 reps) |
-| 6 | **ISMB-cum** (exploratory): adding fourth-order cumulant slices; collinear pairs are identified unless both members are Gaussian; a cross-cumulant test detects dependence | THEORY §8 | Pilot only (E11) |
+| 6 | **ISMB-cum** (exploratory): adding fourth-order cumulant slices; collinear pairs are identified unless both members are Gaussian; a cross-cumulant test detects dependence | THEORY §8 | E11 full run (100 reps × 25 conditions): per-neuron coverage ≥ 0.994 and simultaneous coverage ≥ 0.95 in every condition; widths 0.2–2.3 with non-Gaussian latents and a correct model, where ISMB's are 2.8–16; ≤ 0.6 % confidently wrong. No proof yet |
 | 7 | **AR-grid** (`d = 3`): grid-restricted confidence set from a profiled efficient criterion | THEORY §7 | E4: coverage 0.99–1.00 in the identifiable, collinear and weak-diversity cells; 0.89–0.94 under perfect co-occurrence, where the model is misspecified |
 
 ## Specific questions

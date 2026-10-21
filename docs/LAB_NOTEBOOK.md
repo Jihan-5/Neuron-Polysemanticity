@@ -193,3 +193,23 @@ and which earlier outputs are void.
   1.5 h). Per-condition checkpoints lost up to an hour each time, so conditions now save every
   40 datasets (`run_planted_condition(chunk_dir=...)`). Chunked, resumed and uninterrupted runs
   give identical rows on a test condition; only timing columns differ.
+
+### 15. E11 at full size (100 datasets × 25 conditions): `ismb_cum` holds up
+* **Coverage.** Per-neuron coverage ≥ 0.994 in all 25 conditions (1.000 in 20). All 16 neurons
+  of a dataset were covered at once in ≥ 95 % of datasets in every condition; the lowest was
+  perfect co-occurrence (0.95).
+* **Width.** With non-Gaussian latents and a correctly specified model, 0.2–2.3 against ISMB's
+  2.8–16 on the same datasets (clean 6.2 → 0.47, collinear pair 6.4 → 0.18, weak diversity
+  15.1 → 0.45, 3 environments 15.9 → 0.44, perfect co-occurrence 7.2 → 1.2, correlated
+  stationary noise 10.2 → 2.3).
+* **Gaussian fallback works.** At `g = 0.9` and `g = 1.0`, width 5.0–5.6 against ISMB's
+  5.5–6.2, coverage 1.000, for both the base and the collinear-pair design. The cumulant point
+  estimate fails in exactly these cells (MAE 5.7–6.1, exact ≤ 2 %), so the interval method is
+  what makes the higher-moment information set safe to use. At `g = 0.5` width is 1.0–1.6.
+* **Abstention** to `[0, 16]` on every dataset with environment-scaled or heteroscedastic noise
+  and with 24 factors in 16 neurons, as for ISMB. Student-t noise: 12.0 → 8.4.
+* **The §13 failure mode, measured.** Confidently wrong neurons: 0.6 % under correlated
+  stationary noise, 0.4 % under perfect co-occurrence, 0.2 % with Student-t noise, 0.1 % with
+  loadings near `τ`, 0 in the other 21 conditions. ISMB had none. These sit inside the
+  nominal 5 % simultaneous error, but they are the misses to explain before the method is
+  claimed beyond "exploratory".

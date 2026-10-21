@@ -7,7 +7,7 @@
 <p>
 <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-2a78d6">
 <img alt="tests" src="https://img.shields.io/badge/tests-107%20passing-0ca30c">
-<img alt="status" src="https://img.shields.io/badge/status-full%20runs%20%C2%B7%20E11%20in%20progress-eda100">
+<img alt="status" src="https://img.shields.io/badge/status-planted%20full%20runs%20done%20%C2%B7%20LM%20phase%20pending-0ca30c">
 <img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-E0%20%26%20E4%20met%20%C2%B7%20review%20pending-6250d6">
 </p>
 
@@ -136,13 +136,19 @@ profiles) is measured in E2/E4 rather than assumed away.
    degrades where its assumptions fail: co-occurrence, non-stationary or
    heavy-tailed noise, overcompleteness. Established prior art: JADE; Hyvärinen 2001;
    Tichavský et al.
-6. **Cumulant-aware ISMB (`ismb_cum`, E11, pilot: 6 datasets × 25 conditions; exploratory).**
-   The interval version of finding 5 (THEORY §8). It covered the truth in 24 of 25 conditions
-   with widths of 0.1–1.2 where ISMB's are 6–16 (weak diversity 15.1 → 0.26; 3 environments
-   15.9 → 0.42; perfect co-occurrence 7.4 → 1.2, which its cross-cumulant test detects). It
-   falls back to ISMB's width when latents are near-Gaussian, and abstains wherever ISMB does.
-   One dataset under correlated stationary noise was narrow and wrong (lab notebook §13).
-   The 100-datasets-per-condition run is in progress.
+6. **Cumulant-aware ISMB (`ismb_cum`, E11, full run: 100 datasets × 25 conditions;
+   exploratory).** The interval version of finding 5 (THEORY §8), run on the same datasets as
+   ISMB. Per-neuron coverage was at least 0.994 in every condition, and all 16 neurons of a
+   dataset were covered at once in at least 95 % of datasets in every condition, the nominal
+   level. With non-Gaussian latents and a correctly specified model, widths fell from ISMB's
+   2.8–16 to 0.2–2.3: weak diversity 15.1 → 0.45, 3 environments 15.9 → 0.44, perfect
+   co-occurrence 7.2 → 1.2 (its cross-cumulant test detects the dependence), correlated
+   stationary noise 10.2 → 2.3. With near-Gaussian latents (`g ≥ 0.9`) it falls back to about
+   ISMB's width (5.0–5.6 vs 5.5–6.2) and stays valid, while the cumulant point estimate fails
+   there (MAE 5.7–6.1). Under misspecified noise and overcompleteness it abstains to `[0, 16]`
+   as ISMB does. Confidently wrong intervals are rare but not absent: 0.6 % of neurons under
+   correlated stationary noise (the case flagged in the pilot), 0.4 % under perfect
+   co-occurrence, 0.2 % with Student-t noise, 0.1 % with loadings near `τ`, 0 elsewhere.
 7. **Misfit gate (E2, full run).** It abstains to `[0, 16]` on 100 % of overcomplete and
    non-stationary-noise datasets and on 0–1.3 % of correctly specified ones. Under allowed but
    awkward noise it abstains needlessly but safely: 8 % with correlated stationary noise, 41 %
@@ -298,7 +304,7 @@ Under the E2 stress conditions (10 datasets each), count MAE:
 
 <p align="center"><img src="results/e2_full/e2_stress_intervals.png" width="96%"></p>
 
-### E11 — cumulant-aware ISMB (`ismb_cum`) vs ISMB *(pilot: 6 datasets per condition; exploratory, higher-moment information set)*
+### E11 — cumulant-aware ISMB (`ismb_cum`) vs ISMB *(full run: 100 datasets per condition; exploratory, higher-moment information set)*
 
 Same datasets for both methods. The 19 E2 stress conditions plus near-Gaussian latents
 (`gaussianity_g`: a share `g` of each latent's variance replaced by a Gaussian, which leaves the truth
@@ -306,33 +312,33 @@ unchanged and weakens fourth-order information).
 
 | condition | ismb:coverage | ismb_cum:coverage | ismb_cum:all_covered | ismb_cum:confidently_wrong | ismb:width_mean | ismb_cum:width_mean |
 |---|---|---|---|---|---|---|
-| clean | 1.000 | 1.000 | 1.000 | 0.000 | 6.135 | 0.083 |
-| collinear_pair | 1.000 | 1.000 | 1.000 | 0.000 | 6.781 | 0.177 |
-| collinear_pair_gaussianity_0.5 | 1.000 | 1.000 | 1.000 | 0.000 | 5.615 | 0.885 |
-| collinear_pair_gaussianity_0.9 | 1.000 | 1.000 | 1.000 | 0.000 | 7.927 | 7.156 |
-| collinear_pair_gaussianity_1.0 | 1.000 | 1.000 | 1.000 | 0.000 | 5.427 | 5.010 |
-| collinear_triple | 1.000 | 1.000 | 1.000 | 0.000 | 6.802 | 0.167 |
-| cooccurrence_partial | 1.000 | 1.000 | 1.000 | 0.000 | 6.792 | 0.854 |
-| cooccurrence_perfect | 1.000 | 1.000 | 1.000 | 0.000 | 7.427 | 1.188 |
-| coupled_magnitudes | 1.000 | 1.000 | 1.000 | 0.000 | 6.875 | 0.625 |
-| few_envs_3 | 1.000 | 1.000 | 1.000 | 0.000 | 15.906 | 0.417 |
-| few_envs_4 | 1.000 | 1.000 | 1.000 | 0.000 | 14.260 | 0.250 |
-| gaussianity_0.5 | 1.000 | 1.000 | 1.000 | 0.000 | 6.115 | 1.062 |
-| gaussianity_0.9 | 1.000 | 1.000 | 1.000 | 0.000 | 6.281 | 5.750 |
-| gaussianity_1.0 | 1.000 | 1.000 | 1.000 | 0.000 | 4.854 | 4.219 |
-| invisible_factors | 1.000 | 1.000 | 1.000 | 0.000 | 9.844 | 0.646 |
-| loadings_near_tau | 1.000 | 1.000 | 1.000 | 0.000 | 7.094 | 0.385 |
-| many_envs_8 | 1.000 | 1.000 | 1.000 | 0.000 | 2.229 | 0.083 |
-| near_duplicate_columns | 1.000 | 1.000 | 1.000 | 0.000 | 7.000 | 0.417 |
-| noise_correlated_stationary | 1.000 | 0.979 | 0.833 | 0.021 | 8.302 | 0.021 |
+| clean | 1.000 | 1.000 | 1.000 | 0.000 | 6.246 | 0.467 |
+| collinear_pair | 1.000 | 1.000 | 1.000 | 0.000 | 6.401 | 0.184 |
+| collinear_pair_gaussianity_0.5 | 1.000 | 1.000 | 1.000 | 0.000 | 6.013 | 0.998 |
+| collinear_pair_gaussianity_0.9 | 1.000 | 1.000 | 1.000 | 0.000 | 6.162 | 5.612 |
+| collinear_pair_gaussianity_1.0 | 1.000 | 1.000 | 1.000 | 0.000 | 5.879 | 5.341 |
+| collinear_triple | 1.000 | 1.000 | 1.000 | 0.000 | 6.532 | 0.309 |
+| cooccurrence_partial | 1.000 | 1.000 | 1.000 | 0.000 | 6.893 | 0.927 |
+| cooccurrence_perfect | 1.000 | 0.994 | 0.950 | 0.004 | 7.242 | 1.211 |
+| coupled_magnitudes | 1.000 | 1.000 | 1.000 | 0.000 | 6.317 | 0.701 |
+| few_envs_3 | 1.000 | 1.000 | 1.000 | 0.000 | 15.909 | 0.440 |
+| few_envs_4 | 1.000 | 1.000 | 1.000 | 0.000 | 13.899 | 0.368 |
+| gaussianity_0.5 | 1.000 | 1.000 | 1.000 | 0.000 | 6.199 | 1.591 |
+| gaussianity_0.9 | 1.000 | 1.000 | 1.000 | 0.000 | 5.541 | 5.000 |
+| gaussianity_1.0 | 1.000 | 1.000 | 1.000 | 0.000 | 5.621 | 5.072 |
+| invisible_factors | 1.000 | 1.000 | 1.000 | 0.000 | 9.096 | 0.456 |
+| loadings_near_tau | 1.000 | 0.999 | 0.980 | 0.001 | 6.766 | 0.555 |
+| many_envs_8 | 1.000 | 1.000 | 1.000 | 0.000 | 2.824 | 0.438 |
+| near_duplicate_columns | 1.000 | 1.000 | 1.000 | 0.000 | 6.813 | 0.439 |
+| noise_correlated_stationary | 1.000 | 0.994 | 0.960 | 0.006 | 10.222 | 2.318 |
 | noise_env_heteroscedastic | 1.000 | 1.000 | 1.000 | 0.000 | 16.000 | 16.000 |
 | noise_env_scaled | 1.000 | 1.000 | 1.000 | 0.000 | 16.000 | 16.000 |
-| noise_student_t | 1.000 | 1.000 | 1.000 | 0.000 | 13.792 | 11.844 |
+| noise_student_t | 1.000 | 0.996 | 0.960 | 0.003 | 12.024 | 8.366 |
 | overcomplete_24 | 1.000 | 1.000 | 1.000 | 0.000 | 16.000 | 16.000 |
-| unknown_K_8 | 1.000 | 1.000 | 1.000 | 0.000 | 7.469 | 0.698 |
-| weak_diversity | 1.000 | 1.000 | 1.000 | 0.000 | 15.083 | 0.260 |
+| unknown_K_8 | 1.000 | 1.000 | 1.000 | 0.000 | 7.255 | 0.330 |
+| weak_diversity | 1.000 | 1.000 | 1.000 | 0.000 | 15.104 | 0.453 |
 
-<p align="center"><img src="results/e11_pilot/e11_ismb_vs_ismb_cum.png" width="96%"></p>
+<p align="center"><img src="results/e11_full/e11_ismb_vs_ismb_cum.png" width="96%"></p>
 
 ### E3 — frequency shift with fixed loadings *(full run: 100 replicates)*
 
@@ -443,7 +449,7 @@ Full designs, expected patterns, stop rules and compute estimates are in
 | E8 | Pythia-160M / 410M estimation | p.4, p.9 | `configs/lm/e8_pythia*.yaml` | implemented; smoke-tested offline |
 | E9 | Causal validation (matched-control ablation) | p.9 | `configs/lm/e9_pythia*.yaml` | implemented; smoke-tested offline |
 | E10 | Adaptive environment selection | p.8 (optional) | `configs/planted/e10_adaptive_envs.yaml` | ✅ full run (100 reps) |
-| E11 | Cumulant-aware ISMB vs ISMB (25 conditions) | README open item 0 | `configs/planted/e11_cumulant_ismb.yaml` | pilot; full run (100 reps) in progress |
+| E11 | Cumulant-aware ISMB vs ISMB (25 conditions) | README open item 0 | `configs/planted/e11_cumulant_ismb.yaml` | ✅ full run |
 
 ## 7. Quickstart
 
@@ -542,16 +548,16 @@ P2, S11–S12, S17–S27, X2–X4, X8–X9) to the module, test or experiment th
 
 ## 11. Open items
 
-0. **Cumulant-aware ISMB.** Implemented (`ismb_cum`, THEORY §8). The E11 pilot is very
-   promising (finding 6). Open: the full E11 run (in progress), the narrow-and-wrong case under
-   correlated noise (lab notebook §13), and a coverage argument for the higher-moment
-   information set to go with Propositions 1–2.
+0. **Cumulant-aware ISMB.** Implemented (`ismb_cum`, THEORY §8) and validated in the full E11
+   run (finding 6). Open: a coverage argument for the higher-moment information set to go with
+   Propositions 1–2, and the residual confidently-wrong rate (≤ 0.6 % of neurons) under
+   correlated stationary noise and perfect co-occurrence (lab notebook §13, §15).
 1. **Statistician review** of Proposition 1, Lemma 2, Proposition 2 and the ISMB coverage
    argument (plan p.8 and syllabus S23 both flag this). It is the last unmet item of the theory
    gate. The alternative is to downgrade them to "numerically verified claims".
-2. **Full-scale runs:** done and pushed for E1, E2, E3, E4, E5, E6 and E10. E11
-   (`scripts/run_e11.sh`) is running; runs checkpoint every 40 datasets and resume after a
-   restart.
+2. **Full-scale runs:** done and pushed for every planted and toy experiment (E1–E6, E10,
+   E11). Runs checkpoint every 40 datasets and resume after a restart (`scripts/run_full.sh`,
+   `scripts/run_e11.sh`).
 3. **Language-model phase:** Hugging Face access and a GPU for E8/E9; extend the text banks to
    ≥ 2 000 held-out items per task with human checking (D10).
 4. **Uniformity near collinearity** (Stoye regime): E2/E4 measure it; a repair is open.
