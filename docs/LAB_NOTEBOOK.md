@@ -180,8 +180,9 @@ and which earlier outputs are void.
 
 ### 14. E1 at full size (500 datasets × 24 cells): the pilot holds
 * **Ranking unchanged.** Equal-weight count MAE: `jointdiag_cum` 0.030 (97 % exact), FastICA
-  0.61, DPMI-style + dev calibration 0.64, second-moment joint diagonalisation 2.75. Every number
-  is within 0.04 of the pilot (6 datasets per cell) except GMM-BIC's raw count (0.80 → 1.05).
+  0.61, DPMI-style + dev calibration 0.64, second-moment joint diagonalisation 2.75. Every
+  method's MAE is within 0.06 of the pilot (6 datasets per cell) except GMM-BIC's raw count
+  (0.80 → 1.05).
 * **ISMB** covered every neuron in all 24 cells, with no confidently-wrong interval, at mean
   width 13.3 of 16: 10.8 well separated, 15.7 near collinear. Valid but rarely informative at
   `d = 16` with second moments, as in E2.
