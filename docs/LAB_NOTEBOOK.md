@@ -195,7 +195,7 @@ and which earlier outputs are void.
   give identical rows on a test condition; only timing columns differ.
 
 ### 15. E11 at full size (100 datasets × 25 conditions): `ismb_cum` holds up
-* **Coverage.** Per-neuron coverage ≥ 0.994 in all 25 conditions (1.000 in 20). All 16 neurons
+* **Coverage.** Per-neuron coverage ≥ 0.994 in all 25 conditions (1.000 in 21). All 16 neurons
   of a dataset were covered at once in ≥ 95 % of datasets in every condition; the lowest was
   perfect co-occurrence (0.95).
 * **Width.** With non-Gaussian latents and a correctly specified model, 0.2–2.3 against ISMB's
