@@ -127,7 +127,11 @@ def run_planted_condition(exp: str, cond_id: str, gen_cfg: dict, methods: dict, 
         results = _run(jobs)
     else:
         chunk_dir = Path(chunk_dir)
+        marker = chunk_dir / "chunk_size"
+        if marker.exists() and int(marker.read_text()) != chunk_size:  # saved blocks cover other jobs
+            shutil.rmtree(chunk_dir)
         chunk_dir.mkdir(parents=True, exist_ok=True)
+        marker.write_text(str(chunk_size))
         results = []
         for k, start in enumerate(range(0, len(jobs), chunk_size)):
             f = chunk_dir / f"chunk{k:04d}_{len(jobs)}.pkl"
