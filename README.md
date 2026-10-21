@@ -7,7 +7,7 @@
 <p>
 <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-2a78d6">
 <img alt="tests" src="https://img.shields.io/badge/tests-107%20passing-0ca30c">
-<img alt="status" src="https://img.shields.io/badge/status-full%20runs%20%C2%B7%20E1%20in%20progress-eda100">
+<img alt="status" src="https://img.shields.io/badge/status-full%20runs%20%C2%B7%20E11%20in%20progress-eda100">
 <img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-E0%20%26%20E4%20met%20%C2%B7%20review%20pending-6250d6">
 </p>
 
@@ -123,13 +123,17 @@ profiles) is measured in E2/E4 rather than assumed away.
    truth every time with zero confidently wrong. Its width tracks difficulty: 2.8 with 8
    environments, 6–7 in correctly specified designs, 14–16 under weak diversity, few environments
    or misspecification. The naive bootstrap's coverage fell to 0.06 (weak diversity), 0.21
-   (3 environments) and 0.60–0.63 (non-stationary noise). On the 24-cell E1 grid ISMB's mean
-   width is 13 of 16 (pilot; full run in progress).
+   (3 environments) and 0.60–0.63 (non-stationary noise). On the 24-cell E1 grid (full run:
+   500 datasets per cell, 12 000 in all) ISMB again covered every neuron in every cell with zero
+   confidently wrong, at mean width 13.3 of 16 (10.8 well separated, 15.7 near collinear). The
+   naive bootstrap covered 0.83 well separated but 0.17 near collinear (0.02 in the worst cell),
+   and the sensitivity range was confidently wrong on 38 % and 75 % of neurons respectively.
 5. **Repair: fourth-order cumulant slices (point estimates).** Adding them to the
    joint-diagonalisation stack (`jointdiag_cum`) gives count MAE ≤ 0.05 in 13 of 19 E2 conditions
    (full run). It is the most stable estimator under frequency shift: 0.3 % of neurons change
-   vs 31 % for second moments (E3, full run). On the 24-cell grid it gave MAE 0.030 against 0.63
-   for FastICA (pilot). It degrades where its assumptions fail: co-occurrence, non-stationary or
+   vs 31 % for second moments (E3, full run). On the 24-cell grid it gave MAE 0.030 (97 % exact)
+   against 0.61 for FastICA and 2.75 for second-moment joint diagonalisation (E1, full run). It
+   degrades where its assumptions fail: co-occurrence, non-stationary or
    heavy-tailed noise, overcompleteness. Established prior art: JADE; Hyvärinen 2001;
    Tichavský et al.
 6. **Cumulant-aware ISMB (`ismb_cum`, E11, pilot: 6 datasets × 25 conditions; exploratory).**
@@ -138,7 +142,7 @@ profiles) is measured in E2/E4 rather than assumed away.
    15.9 → 0.42; perfect co-occurrence 7.4 → 1.2, which its cross-cumulant test detects). It
    falls back to ISMB's width when latents are near-Gaussian, and abstains wherever ISMB does.
    One dataset under correlated stationary noise was narrow and wrong (lab notebook §13).
-   The 100-datasets-per-condition run is queued after E1.
+   The 100-datasets-per-condition run is in progress.
 7. **Misfit gate (E2, full run).** It abstains to `[0, 16]` on 100 % of overcomplete and
    non-stationary-noise datasets and on 0–1.3 % of correctly specified ones. Under allowed but
    awkward noise it abstains needlessly but safely: 8 % with correlated stationary noise, 41 %
@@ -209,30 +213,30 @@ AR-grid empty-set rate by condition: collinear_pair: 0.02, cooccurrence_perfect:
 <p align="center"><img src="results/e4_full/e4_coverage_width_d3.png" width="96%"></p>
 <p align="center"><img src="results/e4_full/e4_identification_map_ismb.png" width="70%"></p>
 
-### E1 — 24-setting planted grid *(pilot: 6 test datasets per cell; 500 planned)*
+### E1 — 24-setting planted grid *(full run: 500 test datasets per cell)*
 
 Equal weight over the 24 cells (`d = K = 16`, `E = 6`, `τ = 0.10`). Score-only methods enter the
 count columns only through development-split calibration (`+devcal`).
 
 | method | mae | bias | exact | coverage | covers_idset | width_mean | confidently_wrong | spearman | auroc_poly | support_f1 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| jointdiag_cum | 0.03 | 0.02 | 0.97 | – | – | – | – | – | – | 0.99 |
-| dpmi_style+devcal | 0.60 | 0.01 | 0.49 | – | – | – | – | – | – | – |
-| fastica | 0.63 | 0.62 | 0.65 | – | – | – | – | – | – | 0.90 |
-| gmm_bic+devcal | 0.76 | 0.03 | 0.37 | – | – | – | – | – | – | – |
-| gmm_bic | 0.80 | -0.17 | 0.42 | – | – | – | – | 0.51 | 0.85 | – |
-| moments+devcal | 0.90 | 0.05 | 0.32 | – | – | – | – | – | – | – |
-| factor_analysis | 1.21 | 0.42 | 0.27 | – | – | – | – | – | – | 0.44 |
-| jointdiag | 2.71 | 2.71 | 0.32 | – | – | – | – | – | – | 0.69 |
-| boot_percentile | 2.71 | 2.71 | 0.32 | 0.50 | 0.50 | 4.85 | 0.00 | – | – | 0.69 |
-| sensitivity | 2.71 | 2.71 | 0.32 | 0.33 | 0.33 | 0.27 | 0.52 | – | – | – |
-| ismb | 3.44 | 3.43 | 0.22 | 1.00 | 1.00 | 13.27 | 0.00 | – | – | 0.69 |
-| dict_learning | 5.12 | 5.11 | 0.05 | – | – | – | – | – | – | 0.46 |
-| pca | 6.09 | 6.09 | 0.03 | – | – | – | – | – | – | 0.38 |
-| dpmi_style | – | – | – | – | – | – | – | 0.61 | 0.89 | – |
-| moments | – | – | – | – | – | – | – | -0.46 | 0.25 | – |
+| jointdiag_cum | 0.03 | 0.01 | 0.97 | – | – | – | – | – | – | 0.98 |
+| fastica | 0.61 | 0.60 | 0.66 | – | – | – | – | – | – | 0.90 |
+| dpmi_style+devcal | 0.64 | -0.04 | 0.46 | – | – | – | – | – | – | – |
+| gmm_bic+devcal | 0.78 | 0.01 | 0.36 | – | – | – | – | – | – | – |
+| moments+devcal | 0.91 | 0.03 | 0.33 | – | – | – | – | – | – | – |
+| gmm_bic | 1.05 | 0.50 | 0.31 | – | – | – | – | 0.48 | 0.83 | – |
+| factor_analysis | 1.22 | 0.36 | 0.27 | – | – | – | – | – | – | 0.44 |
+| jointdiag | 2.75 | 2.74 | 0.33 | – | – | – | – | – | – | 0.69 |
+| boot_percentile | 2.75 | 2.75 | 0.33 | 0.50 | 0.50 | 4.82 | 0.00 | – | – | 0.69 |
+| sensitivity | 2.75 | 2.75 | 0.33 | 0.33 | 0.33 | 0.18 | 0.56 | – | – | – |
+| ismb | 3.50 | 3.50 | 0.21 | 1.00 | 1.00 | 13.26 | 0.00 | – | – | 0.69 |
+| dict_learning | 5.12 | 5.11 | 0.05 | – | – | – | – | – | – | 0.47 |
+| pca | 6.10 | 6.09 | 0.03 | – | – | – | – | – | – | 0.38 |
+| dpmi_style | – | – | – | – | – | – | – | 0.61 | 0.90 | – |
+| moments | – | – | – | – | – | – | – | -0.44 | 0.26 | – |
 
-<p align="center"><img src="results/e1_pilot/e1_mae_vs_n.png" width="96%"></p>
+<p align="center"><img src="results/e1_full/e1_mae_vs_n.png" width="96%"></p>
 
 ### Repair — adding fourth-order cumulant slices *(pilots, point estimates; exploratory)*
 
@@ -429,7 +433,7 @@ Full designs, expected patterns, stop rules and compute estimates are in
 | | Experiment | Plan section | Config | Status |
 |---|---|---|---|---|
 | E0 | Theory gate: identifiable vs indistinguishable | p.12 first action | `configs/planted/e0_theory_gate.yaml` | ✅ full run |
-| E1 | 24-setting planted grid | spec doc | `configs/planted/e1_planted_grid.yaml` | pilot; full run (500 reps) in progress |
+| E1 | 24-setting planted grid | spec doc | `configs/planted/e1_planted_grid.yaml` | ✅ full run |
 | E2 | Assumption stress (19 conditions) | p.3, p.10 | `configs/planted/e2_stress.yaml` | ✅ full run (200 reps) |
 | E3 | Frequency shift with fixed $A$ | p.5, p.10 | `configs/planted/e3_frequency_shift.yaml` | ✅ full run (100 reps) |
 | E4 | Coverage in the certified $d=3$ problem | p.8 | `configs/planted/e4_coverage_d3.yaml` | ✅ full run (500 reps) |
@@ -439,7 +443,7 @@ Full designs, expected patterns, stop rules and compute estimates are in
 | E8 | Pythia-160M / 410M estimation | p.4, p.9 | `configs/lm/e8_pythia*.yaml` | implemented; smoke-tested offline |
 | E9 | Causal validation (matched-control ablation) | p.9 | `configs/lm/e9_pythia*.yaml` | implemented; smoke-tested offline |
 | E10 | Adaptive environment selection | p.8 (optional) | `configs/planted/e10_adaptive_envs.yaml` | ✅ full run (100 reps) |
-| E11 | Cumulant-aware ISMB vs ISMB (25 conditions) | README open item 0 | `configs/planted/e11_cumulant_ismb.yaml` | pilot; full run (100 reps) queued after E1 |
+| E11 | Cumulant-aware ISMB vs ISMB (25 conditions) | README open item 0 | `configs/planted/e11_cumulant_ismb.yaml` | pilot; full run (100 reps) in progress |
 
 ## 7. Quickstart
 
@@ -539,14 +543,15 @@ P2, S11–S12, S17–S27, X2–X4, X8–X9) to the module, test or experiment th
 ## 11. Open items
 
 0. **Cumulant-aware ISMB.** Implemented (`ismb_cum`, THEORY §8). The E11 pilot is very
-   promising (finding 6). Open: the full E11 run (queued), the narrow-and-wrong case under
+   promising (finding 6). Open: the full E11 run (in progress), the narrow-and-wrong case under
    correlated noise (lab notebook §13), and a coverage argument for the higher-moment
    information set to go with Propositions 1–2.
 1. **Statistician review** of Proposition 1, Lemma 2, Proposition 2 and the ISMB coverage
    argument (plan p.8 and syllabus S23 both flag this). It is the last unmet item of the theory
    gate. The alternative is to downgrade them to "numerically verified claims".
-2. **Full-scale runs:** done and pushed for E2, E3, E4, E5, E6 and E10. E1 (500 reps × 24 cells)
-   is running and resumable (`scripts/run_full.sh`); E11 follows (`scripts/run_e11.sh`).
+2. **Full-scale runs:** done and pushed for E1, E2, E3, E4, E5, E6 and E10. E11
+   (`scripts/run_e11.sh`) is running; runs checkpoint every 40 datasets and resume after a
+   restart.
 3. **Language-model phase:** Hugging Face access and a GPU for E8/E9; extend the text banks to
    ≥ 2 000 held-out items per task with human checking (D10).
 4. **Uniformity near collinearity** (Stoye regime): E2/E4 measure it; a repair is open.
