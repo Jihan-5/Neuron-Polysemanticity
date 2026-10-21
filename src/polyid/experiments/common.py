@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import itertools
 import os
+import shutil
 import time
 import traceback
 from pathlib import Path
@@ -107,14 +108,37 @@ def _one_dataset(exp: str, cond_id: str, gen_cfg: dict, methods: dict, spec: Est
 
 
 def run_planted_condition(exp: str, cond_id: str, gen_cfg: dict, methods: dict, spec: EstimandSpec, *,
-                          seed: int, reps: int, dev_reps: int = 0, n_jobs: int = -1, taus: list[float] | None = None
-                          ) -> tuple[list[dict], list[dict]]:
+                          seed: int, reps: int, dev_reps: int = 0, n_jobs: int = -1, taus: list[float] | None = None,
+                          chunk_dir: Path | None = None, chunk_size: int = 40) -> tuple[list[dict], list[dict]]:
+    """Run every dataset of one condition. With ``chunk_dir``, datasets run in blocks of
+    ``chunk_size`` and each finished block is saved there, so an interrupted condition resumes
+    from its last block. Each dataset is seeded by ``(exp, condition, split, rep)`` and blocks keep
+    job order, so the result is identical to an unchunked run."""
     taus = taus or [spec.tau]
     assert_disjoint_splits(SeedBank(seed).child(exp, cond_id, "dev", 0), SeedBank(seed).child(exp, cond_id, "test", 0))
     jobs = [("test", r) for r in range(reps)] + [("dev", r) for r in range(dev_reps)]
-    results = Parallel(n_jobs=n_jobs, backend="loky")(
-        delayed(_one_dataset)(exp, cond_id, gen_cfg, methods, spec, seed, split, rep, taus) for split, rep in jobs
-    )
+
+    def _run(block):
+        return Parallel(n_jobs=n_jobs, backend="loky")(
+            delayed(_one_dataset)(exp, cond_id, gen_cfg, methods, spec, seed, split, rep, taus) for split, rep in block
+        )
+
+    if chunk_dir is None:
+        results = _run(jobs)
+    else:
+        chunk_dir = Path(chunk_dir)
+        chunk_dir.mkdir(parents=True, exist_ok=True)
+        results = []
+        for k, start in enumerate(range(0, len(jobs), chunk_size)):
+            f = chunk_dir / f"chunk{k:04d}_{len(jobs)}.pkl"
+            if f.exists():
+                block_res = pd.read_pickle(f)
+            else:
+                block_res = _run(jobs[start:start + chunk_size])
+                tmp = f.with_name(f.name + ".tmp")
+                pd.to_pickle(block_res, tmp)
+                os.replace(tmp, f)
+            results.extend(block_res)
     rows = [r for res in results for r in res["rows"]]
     datasets = [r for res in results for r in res["datasets"]]
     scores = [s for res in results for s in res["scores"]]
@@ -152,13 +176,15 @@ def run_condition_checkpointed(out_dir: Path, exp: str, cond_id: str, *args, **k
     f_rows, f_ds = part / f"{cond_id}_rows.pkl", part / f"{cond_id}_datasets.pkl"
     if f_rows.exists() and f_ds.exists():
         return pd.read_pickle(f_rows), pd.read_pickle(f_ds)
-    rows, datasets = run_planted_condition(exp, cond_id, *args, **kwargs)
+    chunks = part / f"{cond_id}_chunks"
+    rows, datasets = run_planted_condition(exp, cond_id, *args, chunk_dir=chunks, **kwargs)
     r, d = pd.DataFrame(rows), pd.DataFrame(datasets)
     part.mkdir(parents=True, exist_ok=True)
     for df, f in ((r, f_rows), (d, f_ds)):
         tmp = f.with_name(f.name + ".tmp")
         df.to_pickle(tmp)
         os.replace(tmp, f)
+    shutil.rmtree(chunks, ignore_errors=True)
     return r, d
 
 
