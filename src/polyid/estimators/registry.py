@@ -21,6 +21,18 @@ def _ismb_cum(cfg):
     return ISMB({**(cfg or {}), "cumulants": True})
 
 
+def _ismb_oc(cfg):
+    from polyid.bounds.ismb import ISMB
+
+    return ISMB({**(cfg or {}), "oc_gate": True})
+
+
+def _ismb_cum_oc(cfg):
+    from polyid.bounds.ismb import ISMB
+
+    return ISMB({**(cfg or {}), "cumulants": True, "oc_gate": True})
+
+
 def _sensitivity(cfg):
     from polyid.bounds.sensitivity import SensitivityRange
 
@@ -59,6 +71,8 @@ REGISTRY: dict[str, Callable] = {
     "jointdiag_cum": _jd_cum,
     "ismb": _ismb,
     "ismb_cum": _ismb_cum,
+    "ismb_oc": _ismb_oc,
+    "ismb_cum_oc": _ismb_cum_oc,
     "sensitivity": _sensitivity,
     "ar_grid": _ar_grid,
     "topk_sae": _topk_sae,

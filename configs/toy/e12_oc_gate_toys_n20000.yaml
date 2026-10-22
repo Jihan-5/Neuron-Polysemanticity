@@ -1,0 +1,4 @@
+# E12b — as E12a with four times the data per environment: is the dense-regime miss a
+# sample-size limit? (Same trained models; new probe datasets at the larger n.)
+extends: e12_oc_gate_toys.yaml
+n_per_env: 20000

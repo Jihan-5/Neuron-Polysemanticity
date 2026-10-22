@@ -1,0 +1,23 @@
+# E12a — overcompleteness gate on the E5 trained toy models (same models and datasets as E5:
+# the toy seeds do not depend on the experiment name). ismb_oc / ismb_cum_oc add the
+# fourth-order cumulant rank test (bounds/overcomplete.py) and abstain when it rejects.
+experiment: e5_toy_superposition
+seed: 20261018
+spec: {tau: 0.30, v_min: 0.002, max_abs_cos: 0.98, k_max: 32}
+K: 32
+d: [8, 16]
+feature_probs: [0.3, 0.1, 0.03]
+seeds: 5
+steps: 10000
+importance_decay: 0.9
+n_envs: 6
+rate_mult_low: 0.4
+rate_mult_high: 1.6
+n_per_env: 5000
+r_min: 0.1
+noise_sd: 0.0
+methods:
+  ismb: {n_boot: 150}
+  ismb_oc: {n_boot: 150}
+  ismb_cum: {n_boot: 150}
+  ismb_cum_oc: {n_boot: 150}

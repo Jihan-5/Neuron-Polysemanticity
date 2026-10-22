@@ -50,6 +50,14 @@ Procedure (all steps use only :class:`~polyid.data.ObservedData`)
    rejection (``misfit_alpha``, default 1e-3) ISMB abstains to the declared
    trivial range ``[0, k_max]`` (added after the E5 toy pilot, where every
    trained model was overcomplete and narrow intervals undercovered).
+9. **Overcompleteness gate** (optional, ``oc_gate``; method ``ismb_oc``). Second
+   moments cannot count past ``d``, and the misfit gate misses many overcomplete
+   models (E5 full run). The fourth-order cumulant rank test of
+   ``bounds/overcomplete.py`` checks for more non-Gaussian latents than
+   neurons; on rejection ISMB abstains to ``[0, k_max]``. The gate can only widen
+   intervals, so it needs no share of ``alpha``; ``oc_alpha`` sets its
+   false-alarm (needless abstention) rate. It uses fourth moments, so results
+   carry ``higher_moments=True`` in their access record.
 
 What the coverage argument needs (stated, not hidden)
 -----------------------------------------------------
@@ -107,6 +115,10 @@ class ISMBConfig:
     share_gauss: float = 0.10  # taken out of share_pairs when cumulants=True
     cum_dependence: bool = True  # cross-cumulant dependence test (span-merge flagged pairs)
     cum_max_rows: int = 20000  # rows per environment used for cumulant slices
+    # ---- overcompleteness gate ("ismb_oc"; fourth-order cumulant rank test, bounds/overcomplete.py)
+    oc_gate: bool = False
+    oc_alpha: float = 0.05
+    oc_n_boot: int = 50
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "ISMBConfig":
@@ -434,6 +446,17 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
         lower = np.zeros(d, dtype=int)
         upper = np.full(d, k_max, dtype=int)
 
+    # ------------------------------------- overcompleteness gate (fourth-order cumulant rank)
+    oc = None
+    if cfg.oc_gate:
+        from polyid.bounds.overcomplete import overcomplete_test
+
+        oc = overcomplete_test(data.X, data.env, alpha=cfg.oc_alpha, n_boot=cfg.oc_n_boot,
+                               max_rows=cfg.cum_max_rows, rng=rng)
+        if oc.rejected:
+            lower = np.zeros(d, dtype=int)
+            upper = np.full(d, int(spec.k_max or d), dtype=int)
+
     # ---------------------------------------------------------------- point estimate
     point_vis = vis >= v_min
     naive_point = multiplicity(A_n, tau, visible=point_vis, normalize=False)
@@ -472,6 +495,10 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
         "alpha": cfg.alpha,
         "cumulants": use_cum,
     }
+    if oc is not None:
+        diag["oc_rejected"] = oc.rejected
+        diag["oc_ratio"] = oc.ratio
+        diag["oc_rank_lower_bound"] = oc.rank_lower_bound
     if use_cum:
         diag["n_nongaussian"] = int(np.sum(gauss_p[sure] < a_gauss)) if sure else 0
         diag["n_cum_dependence_flags"] = len(cum_dep_edges)
@@ -489,8 +516,7 @@ class ISMB:
 
     def __init__(self, cfg: ISMBConfig | dict | None = None):
         self.cfg = cfg if isinstance(cfg, ISMBConfig) else ISMBConfig.from_dict(cfg)
-        if self.cfg.cumulants:
-            self.name = "ismb_cum"
+        self.name = "ismb" + ("_cum" if self.cfg.cumulants else "") + ("_oc" if self.cfg.oc_gate else "")
 
     def fit(self, data: ObservedData, spec: EstimandSpec, rng: np.random.Generator) -> EstimateResult:
         f = fit_ismb(data, spec, self.cfg, rng)
@@ -503,11 +529,13 @@ class ISMB:
             upper=f.upper.astype(float), loadings=f.A_hat,
             label=(f"confidence(asymptotic, alpha={self.cfg.alpha}, conditions in bounds/ismb.py)"
                    + ("; exploratory higher-moment variant" if self.cfg.cumulants else "")),
-            access=Access(env_labels=True, higher_moments=bool(self.cfg.cumulants), n_observations=data.n,
+            access=Access(env_labels=True, higher_moments=bool(self.cfg.cumulants or self.cfg.oc_gate),
+                          n_observations=data.n,
                           restarts=self.cfg.n_starts,
                           notes=f"bootstrap={self.cfg.n_boot}; " + (
                               "fourth-order cumulant slices in the stack, Gaussianity and cross-cumulant tests"
-                              if self.cfg.cumulants else "fourth moments used only for variances")),
+                              if self.cfg.cumulants else "fourth moments used only for variances")
+                          + ("; fourth-order cumulant rank overcompleteness gate" if self.cfg.oc_gate else "")),
             diagnostics=diag,
         )
 
