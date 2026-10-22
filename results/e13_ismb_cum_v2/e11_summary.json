@@ -1,0 +1,18 @@
+{
+  "conditions": [
+    "clean",
+    "weak_diversity",
+    "collinear_pair",
+    "few_envs_3",
+    "cooccurrence_perfect",
+    "loadings_near_tau",
+    "noise_correlated_stationary",
+    "noise_student_t",
+    "gaussianity_0.9",
+    "overcomplete_24"
+  ],
+  "reps": 100,
+  "figures": [
+    "results/.running/e13_ismb_cum_v2/e11_ismb_vs_ismb_cum.png"
+  ]
+}
