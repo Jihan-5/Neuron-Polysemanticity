@@ -248,7 +248,26 @@ and which earlier outputs are void.
   the noise floor when the data were quadrupled). The ground truth counts both, so `P_j` is not
   identified from even-order moments when features are stored antipodally: each pair
   contributes 1 or 2. Sign-sensitive statistics (positive and negative parts of the projection,
-  for non-negative features) are the candidate fix (§16a, in progress).
+  for non-negative features) are the candidate fix (§16a).
+
+### 16a. Antipodal pairs: census and a sign-split check (feasibility only)
+* **Census.** `d = 8`, probability 0.3: 16 and 15 target features in 8 and 7 antipodal pairs,
+  leaving exactly 8 directions. `d = 16`, probability 0.3: 23 features, 7 pairs, exactly 16
+  directions. So in the dense regime the number of distinct directions equals `d`, which is why
+  neither the misfit gate nor the fourth-order rank test can see the extra features.
+* **Sign split.** Project the data on a feature direction `w` (`u = wᵀh`, 20,000 rows per
+  environment). For the four single (non-antipodal) features checked, the negative side carries
+  essentially nothing (`E[(u⁻)²]` ≈ 1e-7 to 1e-5 against 0.04–0.15 for the positive side). For
+  the four antipodal directions both sides carry 0.03–0.13. A two-sidedness ratio separates them
+  completely here. The profile correlation between the two sides does not (it is negative for
+  both kinds).
+* **What it would take.** Counting antipodal pairs needs a declared assumption that latents are
+  non-negative. That holds for the toys and for SAE-style features, but not automatically for
+  raw MLP neurons (GELU outputs can be negative), and Gaussian components or noise also make a
+  projection two-sided. A sign-split extension of ISMB (widen `U_j` by one for each two-sided
+  component that loads on neuron `j`, with a calibrated threshold) is the next method step. It
+  is not implemented. Until then, the honest statement for the dense regime is that `P_j` is
+  identified only up to antipodal pairs.
 
 ### 17. The 27 confidently-wrong cumulant-ISMB neurons in E11, and `ismb_cum_v2`
 * **What failed.** 27 of 40,000 neuron intervals in 15 of 2,500 datasets, every one off by
