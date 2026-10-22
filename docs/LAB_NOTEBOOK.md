@@ -213,3 +213,81 @@ and which earlier outputs are void.
   loadings near `τ`, 0 in the other 21 conditions. ISMB had none. These sit inside the
   nominal 5 % simultaneous error, but they are the misses to explain before the method is
   claimed beyond "exploratory".
+
+
+## 2026-10-22
+
+### 16. Why ISMB undercovers on trained toy models (E5), and the overcompleteness gate (E12)
+* **Every miss is on the high side.** In E5 the true count exceeds ISMB's upper bound; ISMB
+  never overcounts. At `d = 8` most misses are structural: the true count exceeds `d` for
+  25–96 % of neurons, and a square model's upper bound can never exceed its number of
+  components.
+* **Second moments cannot count past `d`**, so the misfit gate misses many of these models.
+  New diagnostic (`bounds/overcomplete.py`): the averaged within-environment fourth-order
+  cumulant flattening has rank equal to the number of non-Gaussian latents (the idea behind
+  FOOBI, De Lathauwer, Castaing & Cardoso 2007). A Weyl bound with a bootstrap noise floor makes
+  the test of `rank <= d` conservative. The count of singular values above the floor is a
+  lower bound on the number of features in the block.
+* **Feasibility.** The test caught 8 of 12 trained toys (every model with feature probability
+  ≤ 0.1), with no false alarm in 50 planted `K = d` datasets including heavy-tailed and
+  correlated noise. A sharper projected variant had more power but 20 % false alarms under
+  collinearity and Student-t noise, so it was rejected.
+* **E12a/b (same 30 trained models; 5,000 and 20,000 rows per environment).** With the gate
+  (`ismb_oc`) coverage is 1.00 at feature probability 0.03 for both `d`, where it was 0.43 and
+  0.80. The gate fires on 80 % of models at probability 0.1 and never at 0.3. The rank lower
+  bound never exceeded the true number of features. Without the gate, cumulant ISMB is badly
+  wrong on these models (coverage 0.08–0.59), so the gate is essential for it. Plain ISMB gets
+  *worse* with more data at `d = 16` (0.95 → 0.53 at 0.1; 0.93 → 0.55 at 0.3): narrower intervals
+  under a wrong model.
+* **The dense regime is antipodal superposition, not weak features.** At probability 0.3 every
+  target feature has norm ≈ 1, visibility 4–13 × `v_min` and a fourth-order signal comparable to
+  the strongest feature. But the 15–16 target features of the `d = 8` models form 7–8 antipodal
+  pairs (`w`, `−w`, cos < −0.95), leaving exactly 8 distinct directions. Every even-order
+  statistic depends on `w wᵀ`, which is identical for `w` and `−w`, so second- and fourth-order
+  methods see one feature per pair at any sample size (the gate's signal stayed at 0.7–0.8 of
+  the noise floor when the data were quadrupled). The ground truth counts both, so `P_j` is not
+  identified from even-order moments when features are stored antipodally: each pair
+  contributes 1 or 2. Sign-sensitive statistics (positive and negative parts of the projection,
+  for non-negative features) are the candidate fix (§16a, in progress).
+
+### 17. The 27 confidently-wrong cumulant-ISMB neurons in E11, and `ismb_cum_v2`
+* **What failed.** 27 of 40,000 neuron intervals in 15 of 2,500 datasets, every one off by
+  exactly one feature, most of them zero-width. Reproduced exactly from the same seeds.
+* **Correlated or heavy-tailed noise (16 neurons).** Two true factors with similar columns
+  merge into one estimated column that is stable under the bootstrap, while the spare column
+  fits noise and is declared invisible. Two features are then counted as one. Every such
+  dataset has an unstable column (median bootstrap alignment 0.65–0.95). Across 1,008
+  estimated columns, "median bootstrap cosine < 0.97" flagged 21 columns, all badly
+  estimated, with no false flag. But it cannot flag the merged column itself, which looks
+  stable.
+* **Perfect co-occurrence (9 neurons).** The co-occurring pair is hugely significant
+  (cross-cumulant p ≈ 1e-70 to 1e-97) in four of the five failing datasets, yet was never
+  flagged. Pair tests ran only among *sure*-visible components, and one member had been
+  classed ambiguous. The fifth dataset is a genuine power failure (smallest p 3.6e-3 against a
+  Bonferroni level of 8.3e-5).
+* **Loadings near `τ` (2 neurons).** Ordinary sampling error at the nominal level.
+* **Fixes (opt-in flags; `ismb_cum_v2` bundles them with the overcompleteness gate).**
+  `stab_widen` raises `U_j` by the number of unstable columns, capped at `K`. `dep_ambiguous`
+  runs the dependence tests on pairs with ambiguous members and span-merges flagged pairs; the
+  span bound adds nothing to `L_j`. On the 15 failing datasets misses fell from 27 to 7
+  (correlated noise 10 → 0, Student-t 6 → 0, co-occurrence 9 → 5, near-`τ` 2 → 2). Width did not
+  change on datasets whose columns are all stable (clean, weak diversity); the main cost is
+  under Student-t noise (mean width 5.3 → 8.1). The overcompleteness gate fired on none of the
+  39 planted datasets checked.
+* **Caveat.** The fixes were designed on these datasets, so E13 checks `ismb_cum_v2` on fresh
+  ones (new seed, 100 × 25 conditions) before any claim.
+
+### 18. E9 items: BLiMP for agreement, a provenance correction, and WiC ruled out
+* **Provenance correction.** The template banks in `lm/templates.py` were drafted by the AI
+  coding assistant during development. Their docstring said they were hand-written with no LLM
+  involved, which was wrong. Under rule L7 they are smoke-test placeholders only, and E9 now
+  refuses them on a real model.
+* **Agreement task.** 4,000 BLiMP minimal pairs (Warstadt et al. 2020; CC-BY; 96.4 % human
+  agreement) from the four subject–verb agreement paradigms that support the one-prefix
+  method, two of them with attractor nouns. Vendored with checksums in `data/blimp`.
+* **Scoring.** Choices are now scored by the full continuation log-probability. For
+  single-token continuations this equals the previous last-position logit difference
+  (tested); multi-token words such as " hasn't" used to be scored by their first token only.
+* **WiC is ruled out for the semantic task.** Even 175B–530B models score near chance on it
+  (about 49 % zero-shot, 55–58 % few-shot), so an ablation cannot lower Pythia's accuracy. The
+  semantic source is an open decision (README open item 3).

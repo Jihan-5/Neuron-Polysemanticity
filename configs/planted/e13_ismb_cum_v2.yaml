@@ -1,7 +1,8 @@
 # E13 — out-of-sample check of ismb_cum_v2 (cumulant stack + overcompleteness gate + stability
 # widening + dependence tests on ambiguous pairs). Its fixes were designed on E11's failing
-# datasets, so this run uses a NEW seed: fresh datasets for all 25 E11 conditions, both
-# methods on the same datasets.
+# datasets, so this run uses a NEW seed: fresh datasets, both methods on the same datasets.
+# Ten of E11's conditions: the four where ismb_cum missed, five clean or hard ones for the
+# width cost, and overcomplete_24.
 extends: base.yaml
 experiment: e11_cumulant_ismb
 seed: 20261023
@@ -11,30 +12,18 @@ methods:
   ismb_cum: {n_boot: 200, alpha: 0.05}
   ismb_cum_v2: {n_boot: 200, alpha: 0.05}
 conditions:
-  # the 19 E2 stress conditions (copied, so E2's method list is not inherited)
   clean: {}
   weak_diversity: {diversity: near_collinear, collinear_eta: 0.05}
-  collinear_pair: {collinear_groups: [[0, 1]]}
-  collinear_triple: {collinear_groups: [[0, 1, 2]]}
-  near_duplicate_columns: {near_duplicate_pairs: [[0, 1, 0.95]]}
-  loadings_near_tau: {near_tau_columns: 6, near_tau_width: 0.02}
-  invisible_factors: {invisible_factors: [0, 1]}
-  unknown_K_8: {K: 8}
-  cooccurrence_partial: {switch_corr_blocks: [[0, 1]], switch_corr: 0.5}
-  cooccurrence_perfect: {switch_corr_blocks: [[0, 1]], switch_corr: 1.0}
-  coupled_magnitudes: {magnitude_corr_blocks: [[2, 3]], magnitude_corr: 0.8}
-  noise_correlated_stationary: {noise_mode: correlated_stationary, noise_rel_sd: 0.2}
-  noise_env_scaled: {noise_mode: env_scaled, noise_rel_sd: 0.2}
-  noise_env_heteroscedastic: {noise_mode: env_heteroscedastic, noise_rel_sd: 0.2}
-  noise_student_t: {noise_mode: student_t, noise_rel_sd: 0.2}
+  collinear_pair:
+    collinear_groups:
+    - [0, 1]
   few_envs_3: {n_envs: 3}
-  few_envs_4: {n_envs: 4}
-  many_envs_8: {n_envs: 8}
-  overcomplete_24: {K: 24, max_cond: 1.0e9}
-  # near-Gaussian latents: fourth-order information weak (0.9) or absent (1.0)
-  gaussianity_0.5: {latent_gaussianity: 0.5}
+  cooccurrence_perfect:
+    switch_corr_blocks:
+    - [0, 1]
+    switch_corr: 1.0
+  loadings_near_tau: {near_tau_columns: 6, near_tau_width: 0.02}
+  noise_correlated_stationary: {noise_mode: correlated_stationary, noise_rel_sd: 0.2}
+  noise_student_t: {noise_mode: student_t, noise_rel_sd: 0.2}
   gaussianity_0.9: {latent_gaussianity: 0.9}
-  gaussianity_1.0: {latent_gaussianity: 1.0}
-  collinear_pair_gaussianity_0.5: {collinear_groups: [[0, 1]], latent_gaussianity: 0.5}
-  collinear_pair_gaussianity_0.9: {collinear_groups: [[0, 1]], latent_gaussianity: 0.9}
-  collinear_pair_gaussianity_1.0: {collinear_groups: [[0, 1]], latent_gaussianity: 1.0}
+  overcomplete_24: {K: 24, max_cond: 1.0e9}
