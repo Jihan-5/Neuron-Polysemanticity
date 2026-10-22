@@ -1,0 +1,33 @@
+{
+  "conditions": [
+    "clean",
+    "weak_diversity",
+    "collinear_pair",
+    "collinear_triple",
+    "near_duplicate_columns",
+    "loadings_near_tau",
+    "invisible_factors",
+    "unknown_K_8",
+    "cooccurrence_partial",
+    "cooccurrence_perfect",
+    "coupled_magnitudes",
+    "noise_correlated_stationary",
+    "noise_env_scaled",
+    "noise_env_heteroscedastic",
+    "noise_student_t",
+    "few_envs_3",
+    "few_envs_4",
+    "many_envs_8",
+    "overcomplete_24",
+    "gaussianity_0.5",
+    "gaussianity_0.9",
+    "gaussianity_1.0",
+    "collinear_pair_gaussianity_0.5",
+    "collinear_pair_gaussianity_0.9",
+    "collinear_pair_gaussianity_1.0"
+  ],
+  "reps": 100,
+  "figures": [
+    "results/.running/e12_oc_gate_planted/e11_ismb_vs_ismb_cum.png"
+  ]
+}
