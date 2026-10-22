@@ -6,7 +6,7 @@
 
 <p>
 <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-2a78d6">
-<img alt="tests" src="https://img.shields.io/badge/tests-118%20passing-0ca30c">
+<img alt="tests" src="https://img.shields.io/badge/tests-119%20passing-0ca30c">
 <img alt="status" src="https://img.shields.io/badge/status-planted%20full%20runs%20done%20%C2%B7%20LM%20phase%20pending-0ca30c">
 <img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-open%20%C2%B7%20proofs%20numerically%20verified%2C%20review%20pending-6250d6">
 </p>

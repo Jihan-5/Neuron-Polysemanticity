@@ -33,6 +33,13 @@ def _ismb_cum_oc(cfg):
     return ISMB({**(cfg or {}), "cumulants": True, "oc_gate": True})
 
 
+def _ismb_cum_v2(cfg):
+    from polyid.bounds.ismb import ISMB
+
+    return ISMB({**(cfg or {}), "cumulants": True, "oc_gate": True, "stab_widen": True, "dep_ambiguous": True,
+                 "name": "ismb_cum_v2"})
+
+
 def _sensitivity(cfg):
     from polyid.bounds.sensitivity import SensitivityRange
 
@@ -73,6 +80,7 @@ REGISTRY: dict[str, Callable] = {
     "ismb_cum": _ismb_cum,
     "ismb_oc": _ismb_oc,
     "ismb_cum_oc": _ismb_cum_oc,
+    "ismb_cum_v2": _ismb_cum_v2,
     "sensitivity": _sensitivity,
     "ar_grid": _ar_grid,
     "topk_sae": _topk_sae,

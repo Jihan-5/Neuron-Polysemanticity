@@ -81,3 +81,21 @@ def test_latent_gaussianity_keeps_truth_and_second_moments():
     b = generate(PlantedConfig(d=6, K=6, n_per_env=500, latent_gaussianity=0.7), SeedBank(2).child("g"))
     assert np.array_equal(a.oracle.truth_at(0.1), b.oracle.truth_at(0.1))
     assert np.allclose(a.oracle.A, b.oracle.A)
+
+
+def test_ismb_cum_v2_flags_and_stability_widening():
+    """v2 bundles the cumulant stack, the overcompleteness gate, stability widening and dependence
+    tests on ambiguous pairs; forcing every column 'unstable' must raise U_j to K, never lower L_j."""
+    from polyid.bounds.ismb import ISMB
+
+    v2 = REGISTRY["ismb_cum_v2"]({"n_boot": 20})
+    assert v2.name == "ismb_cum_v2"
+    assert v2.cfg.cumulants and v2.cfg.oc_gate and v2.cfg.stab_widen and v2.cfg.dep_ambiguous
+    ds = generate(PlantedConfig.from_dict({"d": 8, "K": 8, "n_per_env": 3000}), SeedBank(3).child("v2"), v_min=0.006)
+    spec = EstimandSpec(tau=0.10, v_min=0.006, max_abs_cos=0.98)
+    base = fit_ismb(ds.observed, spec, ISMBConfig(n_boot=20, cumulants=True), np.random.default_rng(0))
+    wide = fit_ismb(ds.observed, spec, ISMBConfig(n_boot=20, cumulants=True, stab_widen=True, stab_cos=1.01),
+                    np.random.default_rng(0))
+    assert wide.diagnostics["n_unstable_cols"] == 8
+    assert np.array_equal(wide.lower, base.lower) and np.all(wide.upper == 8)
+    assert ISMB({"cumulants": True, "stab_widen": True, "dep_ambiguous": True}).name == "ismb_cum_stab_amb"

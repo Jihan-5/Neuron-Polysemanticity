@@ -58,6 +58,25 @@ Procedure (all steps use only :class:`~polyid.data.ObservedData`)
    intervals, so it needs no share of ``alpha``; ``oc_alpha`` sets its
    false-alarm (needless abstention) rate. It uses fourth moments, so results
    carry ``higher_moments=True`` in their access record.
+10. **Stability widening** (optional, ``stab_widen``; suffix ``_stab``). A column
+   whose bootstrap replicates disagree (median alignment cosine below
+   ``stab_cos``) is weakly identified, and in E11 such a column often marked a
+   wasted slot: two true factors merged into one stable column while the spare
+   column fitted noise, so ``P_j`` was undercounted by one (lab notebook §17).
+   Each unstable column may therefore hide one factor: ``U_j`` is raised by
+   the number of unstable columns and capped at ``K`` instead of at the number
+   of visible components. Lower bounds are unchanged.
+11. **Dependence tests on ambiguous components** (optional, ``dep_ambiguous``). Pair
+   tests normally run only among sure-visible components, so a co-occurring
+   factor whose visibility band straddles ``v_min`` was never tested and stayed
+   an independent singleton (E11: four of five missed perfect-co-occurrence
+   datasets, lab notebook §17). With this flag the residual-dependence and
+   cross-cumulant tests also cover pairs involving ambiguous components (not
+   the collinearity merges); a flagged pair is span-merged, and the span bound
+   adds nothing to ``L_j``, so an ambiguous member is never surely counted.
+   These extra tests do not enter the misfit statistic.
+
+``ismb_cum_v2`` = ``cumulants`` + ``oc_gate`` + ``stab_widen`` + ``dep_ambiguous``.
 
 What the coverage argument needs (stated, not hidden)
 -----------------------------------------------------
@@ -119,6 +138,11 @@ class ISMBConfig:
     oc_gate: bool = False
     oc_alpha: float = 0.05
     oc_n_boot: int = 50
+    # ---- stability widening ("_stab"): unstable bootstrap columns may hide a factor
+    stab_widen: bool = False
+    stab_cos: float = 0.97
+    dep_ambiguous: bool = False  # residual-dependence and cross-cumulant tests on pairs with ambiguous members
+    name: str = ""  # registry label override (e.g. "ismb_cum_v2")
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "ISMBConfig":
@@ -314,11 +338,15 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
 
     # ------------------------------------------------- which factors are separated?
     pairs = [(sure[i], sure[j]) for i in range(len(sure)) for j in range(i + 1, len(sure))]
+    vis_all = sorted(sure + ambiguous)
+    amb_pairs = ([(vis_all[i], vis_all[j]) for i in range(len(vis_all)) for j in range(i + 1, len(vis_all))
+                  if vis_status[vis_all[i]] == 1 or vis_status[vis_all[j]] == 1] if cfg.dep_ambiguous else [])
     n_pairs = max(len(pairs), 1)
     corr = n_pairs if cfg.pair_correction == "bonferroni" else 1
     share_pairs = cfg.share_pairs - (cfg.share_gauss if use_cum else 0.0)
     a_pair = cfg.alpha * share_pairs / corr
-    a_dep = cfg.dependence_alpha / corr
+    corr_dep = max(len(pairs) + len(amb_pairs), 1) if cfg.pair_correction == "bonferroni" else 1
+    a_dep = cfg.dependence_alpha / corr_dep
     gauss_p = np.full(K, np.nan)
     if use_cum:
         # a collinear pair stays identified by fourth cumulants unless BOTH components are
@@ -343,9 +371,23 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
             uf.union(k, l)
             span_edges.add((k, l))
             cum_dep_edges.add((k, l))
-    comps = uf.groups(sure)
-    groups = [g for g in comps if len(g) > 1]
-    singletons = sorted([g[0] for g in comps if len(g) == 1] + ambiguous)
+    for k, l in amb_pairs:  # dependence only; kept out of `tests` so the misfit statistic is unchanged
+        t = test_pair(U2[:, k], U2[:, l], data.env, E, k, l, data.cluster)
+        dep = cfg.dependence_merge and t.dependence_p < a_dep
+        cum_dep = use_cum and cfg.cum_dependence and _cross_cumulant_test(U[:, k], U[:, l], data.env, E) < a_dep
+        if dep or cum_dep:
+            uf.union(k, l)
+            span_edges.add((k, l))
+            if cum_dep:
+                cum_dep_edges.add((k, l))
+    if cfg.dep_ambiguous:
+        comps = uf.groups(vis_all)
+        groups = [g for g in comps if len(g) > 1]
+        singletons = sorted(g[0] for g in comps if len(g) == 1)
+    else:
+        comps = uf.groups(sure)
+        groups = [g for g in comps if len(g) > 1]
+        singletons = sorted([g[0] for g in comps if len(g) == 1] + ambiguous)
     group_joint_p = [group_rank1_pvalue(U2[:, G], data.env, E, data.cluster) for G in groups]
 
     # ------------------------------------------------------------------- bootstrap
@@ -430,6 +472,9 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
         group_mid += np.floor((lo_hat + hi_hat) / 2 + 0.5)
         group_modes.append(mode)
     upper = np.minimum(upper, len(sure) + len(ambiguous))
+    n_unstable = int(np.sum(np.median(boot_cos, axis=0) < cfg.stab_cos))
+    if cfg.stab_widen and n_unstable:
+        upper = np.minimum(upper + n_unstable, K)
 
     # ------------------------------------------------- global misfit gate (plan p.7 "Diagnose")
     # Pool the pairwise residual-dependence statistics into one approximate chi-square test of
@@ -478,6 +523,7 @@ def fit_ismb(data: ObservedData, spec: EstimandSpec, cfg: ISMBConfig, rng: np.ra
         "min_pair_sin2": float(best.pair_sin2[iu].min()) if K > 1 else 1.0,
         "boot_align_cos_median": float(np.median(boot_cos)),
         "boot_align_cos_min_col": float(np.median(boot_cos, axis=0).min()),
+        "n_unstable_cols": n_unstable,
         "cond_A": float(np.linalg.cond(A_n)),
         "n_sure_visible": len(sure),
         "n_ambiguous_visible": len(ambiguous),
@@ -516,7 +562,9 @@ class ISMB:
 
     def __init__(self, cfg: ISMBConfig | dict | None = None):
         self.cfg = cfg if isinstance(cfg, ISMBConfig) else ISMBConfig.from_dict(cfg)
-        self.name = "ismb" + ("_cum" if self.cfg.cumulants else "") + ("_oc" if self.cfg.oc_gate else "")
+        self.name = self.cfg.name or ("ismb" + ("_cum" if self.cfg.cumulants else "")
+                                      + ("_oc" if self.cfg.oc_gate else "") + ("_stab" if self.cfg.stab_widen else "")
+                                      + ("_amb" if self.cfg.dep_ambiguous else ""))
 
     def fit(self, data: ObservedData, spec: EstimandSpec, rng: np.random.Generator) -> EstimateResult:
         f = fit_ismb(data, spec, self.cfg, rng)
