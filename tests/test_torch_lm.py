@@ -83,3 +83,32 @@ def test_cache_roundtrip_and_family_splits(tmp_path):
         fams = [set(i.family for i in sp[k]) for k in ("fit", "dev", "test")]
         assert not (fams[0] & fams[1]) and not (fams[0] & fams[2]) and not (fams[1] & fams[2])
     assert doc_split("abc") == doc_split("abc")
+
+
+def test_blimp_items_and_full_continuation_scoring():
+    """BLiMP loads as one-prefix choice items (checksums enforced); full-continuation scoring equals
+    the last-position logit difference for single-token continuations and handles multi-token ones."""
+    import torch
+
+    from polyid.lm.ablation import choice_scores
+    from polyid.lm.blimp import AGREEMENT_PARADIGMS, load_blimp
+    from polyid.lm.hooks import tiny_random_gptneox
+    from polyid.lm.smoke_tokenizer import ByteTokenizer
+    from polyid.lm.templates import ChoiceItem
+
+    items = load_blimp()
+    assert len(items) == 1000 * len(AGREEMENT_PARADIGMS)
+    assert all(it.correct.startswith(" ") and it.correct != it.incorrect for it in items)
+    assert len({it.family for it in items}) == len(items)
+
+    m, tok = tiny_random_gptneox(n_layers=2, d_model=32, d_mlp=64), ByteTokenizer()
+    single = [ChoiceItem("ab", "c", "d", "t", "f"), ChoiceItem("xyz", "q", "r", "t", "g")]
+    with torch.no_grad():
+        s = choice_scores(m, tok, single)
+        for i, it in enumerate(single):
+            ids = torch.tensor([tok(it.prompt)["input_ids"]])
+            row = m(input_ids=ids).logits[0, -1]
+            ref = row[tok(it.correct)["input_ids"][0]] - row[tok(it.incorrect)["input_ids"][0]]
+            assert abs(s[i] - float(ref)) < 1e-4
+        multi = choice_scores(m, tok, [ChoiceItem("ab", " has", " have", "t", "f")])
+    assert np.isfinite(multi).all()

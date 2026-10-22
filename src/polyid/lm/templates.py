@@ -6,8 +6,12 @@ lexical identity confounds semantic-overlap claims). Plan p.9 "Causal
 validation": held-out semantic decision contexts and unrelated-task contexts,
 scoring a predefined continuation choice.
 
-Everything here is generated deterministically from small hand-written banks
-(no LLM is used to write or label items, plan p.9 "Interpretation boundary").
+Everything here is generated deterministically from small banks. **Provenance
+correction (2026-10-22):** these banks were drafted by the AI coding assistant
+during development, not written by a person, so under rule L7 (no LLM-written
+items) they are development placeholders only. E9 refuses them outside smoke
+runs; its reported agreement task comes from BLiMP (``lm/blimp.py``), and the
+semantic task needs a human-validated source (README open items).
 Each item carries a ``family`` id (the frame that generated it); splits are
 made by family, so test items come from held-out frames, not paraphrases of
 training frames.

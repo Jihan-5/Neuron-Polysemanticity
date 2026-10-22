@@ -6,7 +6,7 @@
 
 <p>
 <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-2a78d6">
-<img alt="tests" src="https://img.shields.io/badge/tests-119%20passing-0ca30c">
+<img alt="tests" src="https://img.shields.io/badge/tests-120%20passing-0ca30c">
 <img alt="status" src="https://img.shields.io/badge/status-planted%20full%20runs%20done%20%C2%B7%20LM%20phase%20pending-0ca30c">
 <img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-open%20%C2%B7%20proofs%20numerically%20verified%2C%20review%20pending-6250d6">
 </p>
@@ -561,8 +561,11 @@ P2, S11–S12, S17–S27, X2–X4, X8–X9) to the module, test or experiment th
 2. **Full-scale runs:** done and pushed for every planted and toy experiment (E1–E6, E10,
    E11). Runs checkpoint every 40 datasets and resume after a restart (`scripts/run_full.sh`,
    `scripts/run_e11.sh`).
-3. **Language-model phase:** Hugging Face access and a GPU for E8/E9; extend the text banks to
-   ≥ 2 000 held-out items per task with human checking (D10).
+3. **Language-model phase:** Hugging Face access and a GPU for E8/E9. E9's agreement task now
+   uses 4,000 BLiMP minimal pairs (`data/blimp`, CC-BY). Its semantic task still needs a
+   human-validated source (D10): WiC is near chance even for very large models, so an ablation
+   could not lower it. The earlier template banks were drafted by the AI coding assistant, so
+   under rule L7 they are smoke-test placeholders only.
 4. **Uniformity near collinearity** (Stoye regime): E2/E4 measure it; a repair is open.
 5. **Overcomplete extension:** not claimed. SOBIUM (X9) is the prior art to engage first.
 6. **DPMI:** replace the DPMI-style approximation with a verified reimplementation (D6).

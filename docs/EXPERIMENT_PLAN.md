@@ -227,9 +227,13 @@ selected representations. It does not prove that each neuron is individually pol
 (plan p.9; spec doc). Single-neuron tests across independent semantic families are needed for
 that narrower claim.
 
-**Open item.** The text banks currently give 768 semantic and 384 agreement items in total.
-The plan asks for 2,000 held-out items per task, so the banks must be extended (and
-human-checked) before E9 is run for real.
+**Items (rule L7).** The agreement task uses 4,000 BLiMP minimal pairs (`data/blimp`,
+`lm/blimp.py`), above the plan's 2,000 per task. Continuations are scored by their full
+log-probability, so multi-token words such as " hasn't" count in full. **Open item:** the
+semantic task has no human-validated source yet. WiC was the first choice, but models far larger
+than Pythia score near chance on it, so an ablation could not lower it. The template banks
+(768 semantic, 384 agreement items) were drafted by the AI coding assistant, so they are smoke-test
+placeholders only, and E9 refuses them on a real model.
 
 ## E10 — Adaptive environment selection (optional; `configs/planted/e10_adaptive_envs.yaml`)
 

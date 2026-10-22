@@ -22,6 +22,11 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+try:
+    import torch
+except ImportError:  # pragma: no cover
+    torch = None
+
 from polyid.lm.hooks import ablate_neurons
 from polyid.lm.templates import ChoiceItem
 from polyid.stats import paired_difference
@@ -70,20 +75,39 @@ def matched_controls(profile: pd.DataFrame, candidates: np.ndarray, n_sets: int,
 
 
 @torch.no_grad() if torch is not None else (lambda f: f)
-def choice_scores(model, tokenizer, items: list[ChoiceItem], batch_size: int = 32, device: str = "cpu") -> np.ndarray:
-    """Logit difference (first token of correct minus first token of incorrect) at the last prompt token."""
-    out = np.empty(len(items))
-    for s in range(0, len(items), batch_size):
-        batch = items[s:s + batch_size]
-        enc = tokenizer([it.prompt for it in batch], return_tensors="pt", padding=True)
-        logits = model(input_ids=enc["input_ids"].to(device), attention_mask=enc["attention_mask"].to(device)).logits
-        last = enc["attention_mask"].sum(1) - 1
-        for b, it in enumerate(batch):
-            row = logits[b, last[b]] if tokenizer.padding_side == "right" else logits[b, -1]
-            good = tokenizer(it.correct, add_special_tokens=False)["input_ids"][0]
-            bad = tokenizer(it.incorrect, add_special_tokens=False)["input_ids"][0]
-            out[s + b] = float(row[good] - row[bad])
+def continuation_logprobs(model, tokenizer, prompts: list[str], continuations: list[str], batch_size: int = 32,
+                          device: str = "cpu") -> np.ndarray:
+    """``sum_t log p(continuation token t | prompt, earlier continuation tokens)`` for each pair."""
+    seqs = []
+    for p, c in zip(prompts, continuations):
+        ids_p = list(tokenizer(p)["input_ids"])
+        ids_c = list(tokenizer(c, add_special_tokens=False)["input_ids"])
+        seqs.append((ids_p + ids_c, len(ids_p), len(ids_c)))
+    out = np.empty(len(seqs))
+    for s in range(0, len(seqs), batch_size):
+        batch = seqs[s:s + batch_size]
+        L = max(len(ids) for ids, _, _ in batch)
+        ids = torch.zeros(len(batch), L, dtype=torch.long)  # right padding; padded positions are never read
+        mask = torch.zeros(len(batch), L, dtype=torch.long)
+        for b, (seq, _, _) in enumerate(batch):
+            ids[b, :len(seq)] = torch.tensor(seq)
+            mask[b, :len(seq)] = 1
+        logp = torch.log_softmax(model(input_ids=ids.to(device), attention_mask=mask.to(device)).logits.float(), -1)
+        for b, (seq, n_p, n_c) in enumerate(batch):
+            pos = torch.arange(n_p - 1, n_p + n_c - 1)
+            out[s + b] = float(logp[b, pos, torch.tensor(seq[n_p:n_p + n_c])].sum())
     return out
+
+
+def choice_scores(model, tokenizer, items: list[ChoiceItem], batch_size: int = 32, device: str = "cpu") -> np.ndarray:
+    """Log-probability of the correct continuation minus that of the incorrect one, summed over all
+    continuation tokens. For single-token continuations this equals the logit difference at the
+    last prompt token (the softmax normaliser cancels); multi-token continuations such as BLiMP's
+    `` hasn't`` / `` haven't`` are scored in full instead of by their first token."""
+    prompts = [it.prompt for it in items]
+    good = continuation_logprobs(model, tokenizer, prompts, [it.correct for it in items], batch_size, device)
+    bad = continuation_logprobs(model, tokenizer, prompts, [it.incorrect for it in items], batch_size, device)
+    return good - bad
 
 
 @dataclass

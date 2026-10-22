@@ -62,7 +62,7 @@ because a reviewer may prefer it.
 | L4 | Splits by document / template family, 60/20/20, salted hash, so no family crosses splits | `lm/corpus.doc_split`, `lm/templates.split_by_family` |
 | L5 | Token positions chosen by a predeclared rule, never by activation value | `lm/corpus.select_positions`, `target_position` |
 | L6 | Candidate neurons chosen on the dev split; ablation evaluated on held-out test families; controls matched on dev magnitude and prevalence | `experiments/e9_causal_validation.py` |
-| L7 | No LLM writes or labels items; the text banks are small and hand-written | `lm/templates.py` |
+| L7 | No LLM writes or labels items. The banks in `lm/templates.py` were drafted by the AI coding assistant during development (provenance corrected 2026-10-22), so they are smoke-test placeholders only; reported E9 items come from human-validated datasets (BLiMP for agreement; the semantic source is pending) | `lm/templates.py`, `lm/blimp.py`, E9 guard |
 
 ## G — engineering
 
@@ -85,7 +85,7 @@ because a reviewer may prefer it.
 | D7 | Pythia-410M layers 4, 10, 16 (exact relative depth of 2, 5, 8 / 12); ablation at 10 | Spec doc suggested block 11 for 410M | The plan says choose analogous depths in advance by a rule. 11 is kept as an alternative config line |
 | D8 | E4 uses `τ = 0.30` | `τ = 0.10` | In `d = 3` almost every grid direction has all entries ≥ 0.10, so counts would not vary |
 | D9 | LM estimator applied to predeclared random neuron **blocks** of 32 | The full 3072-wide square model | The full model is intractable and implausible (`K ≫ d`). Block stationarity is checked by diagnostics, not assumed |
-| D10 | Semantic decision task = forced choice between sense-consistent and inconsistent associates; unrelated task = subject–verb agreement with an attractor | Other tasks | Deterministic, auditable, family-split. **The banks are below the plan's 2,000 held-out items per task; expanding them is an open item** |
+| D10 | Semantic decision task = forced choice between sense-consistent and inconsistent continuations; unrelated task = subject–verb agreement with an attractor | Other tasks | Agreement: 4,000 BLiMP minimal pairs (two attractor paradigms, two plain), scored by full-continuation log-probability. **Semantic: no human-validated source chosen yet.** WiC was the first choice, but models far larger than Pythia are near chance on it, so ablation cannot lower it |
 | D11 | E5 toy uses `τ = 0.30` | `τ = 0.10` | Trained toy columns are dense: at 0.10 nearly every neuron loads on every represented feature |
 | D13 | `ismb_cum` weights every matrix in the joint-diagonalisation stack by the inverse of its estimated sampling-noise scale | Unit-norm weighting (as in the `jointdiag_cum` point estimator) | Unit-norm weighting gives pure-noise cumulant slices full weight when latents are near-Gaussian. Widths went to ≈ 15 of 16 where ISMB had ≈ 5 (lab notebook §12) |
 | D14 | `ismb_cum` runs ISMB's second-moment pair, dependence and misfit tests on a second-moment refinement of the basis, warm-started from the combined solution | Run them on the combined basis | Those tests assume a basis fitted to the covariance stack. On the combined basis the misfit gate fired on every clean dataset (lab notebook §12) |

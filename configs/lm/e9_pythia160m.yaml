@@ -9,3 +9,6 @@ ablation_layer: 5
 e8_dir: results/e8_pythia160m
 n_candidates: 10
 n_control_sets: 20
+# items (rule L7: human-validated sources only for reported runs)
+agreement_source: blimp          # data/blimp: 4 subject-verb agreement paradigms, 4000 minimal pairs
+semantic_source: none            # pending a decision: WiC is at chance for models this size

@@ -5,8 +5,16 @@ r"""E9 — Causal validation of candidate neurons (plan p.9; spec doc "Real-mode
   point estimate) — selection never touches test items;
 * controls: ``n_control_sets`` sets of random neurons matched on development
   activation magnitude and prevalence;
-* tasks (held-out template families only): semantic sense decisions and an
-  unrelated agreement task; both scored as logit differences and accuracy;
+* tasks: a semantic sense decision and an unrelated agreement task, both
+  scored as the log-probability difference between the correct and incorrect
+  continuation (all continuation tokens) and as accuracy. Rule L7 forbids
+  LLM-written items, so reported runs take items from human-validated sources:
+  the agreement task from BLiMP (``agreement_source: blimp``, ``lm/blimp.py``).
+  The semantic source is still to be chosen (WiC is at chance for language
+  models of this size, so ablation cannot lower it); until then
+  ``semantic_source: none`` runs the agreement task alone. The template banks in
+  ``lm/templates.py`` were drafted during development and are allowed only in
+  smoke runs;
 * outputs: per-item paired outcomes, family-clustered intervals, and the
   fraction of control sets whose drop the candidate drop exceeds.
 
@@ -31,9 +39,14 @@ from polyid.utils.seeding import SeedBank
 def run(cfg: dict, out_dir: Path) -> dict:
     from polyid.lm.ablation import matched_controls, neuron_profile, run_ablation, select_candidates
     from polyid.lm.cache import load_observed
+    from polyid.lm.blimp import load_blimp
     from polyid.lm.templates import agreement_items, semantic_choice_items, split_by_family
 
     out_dir = Path(out_dir)
+    sem_src, agr_src = cfg.get("semantic_source", "none"), cfg.get("agreement_source", "blimp")
+    if not cfg.get("smoke") and "templates" in (sem_src, agr_src):
+        raise RuntimeError("E9 on a real model needs human-validated items (rule L7): the template banks in "
+                           "lm/templates.py were drafted during development and are allowed only in smoke runs.")
     model, tok, info = load_lm(cfg)
     layer = int(cfg["ablation_layer"])
     e8 = Path(cfg["e8_dir"])
@@ -47,17 +60,27 @@ def run(cfg: dict, out_dir: Path) -> dict:
     prof = neuron_profile(dev.X)
     bank = SeedBank(int(cfg["seed"])).child("e9")
     controls = matched_controls(prof, candidates, int(cfg.get("n_control_sets", 20)), bank.child("controls").rng())
-    sem = split_by_family(semantic_choice_items())["test"]
-    agr = split_by_family(agreement_items())["test"]
+    tasks = {}
+    if sem_src == "templates":
+        tasks["semantic"] = split_by_family(semantic_choice_items())["test"]
+    elif sem_src != "none":
+        raise ValueError(f"unknown semantic_source {sem_src!r}")
+    if agr_src == "blimp":
+        # no BLiMP item is used to select neurons (selection uses E8's dev split), so all pairs are test items
+        tasks["agreement"] = load_blimp(cfg.get("blimp_paradigms"), cfg.get("blimp_dir"))
+    elif agr_src == "templates":
+        tasks["agreement"] = split_by_family(agreement_items())["test"]
+    else:
+        raise ValueError(f"unknown agreement_source {agr_src!r}")
     cap = cfg.get("max_items_per_task")
     if cap:
-        sem, agr = sem[:int(cap)], agr[:int(cap)]
-    rep = run_ablation(model, tok, layer, candidates, controls, {"semantic": sem, "agreement": agr},
-                       device=cfg.get("device", "cpu"))
+        tasks = {k: v[:int(cap)] for k, v in tasks.items()}
+    rep = run_ablation(model, tok, layer, candidates, controls, tasks, device=cfg.get("device", "cpu"))
     save_tables(out_dir, "e9_per_item", rep.per_item)
     save_tables(out_dir, "e9_summary", rep.summary)
     out = {"model": info, "layer": layer, "candidates": candidates.tolist(),
            "controls": [c.tolist() for c in controls], "summary": rep.summary.to_dict(orient="records"),
-           "smoke": bool(cfg.get("smoke", False))}
+           "smoke": bool(cfg.get("smoke", False)), "semantic_source": sem_src, "agreement_source": agr_src,
+           "n_items": {k: len(v) for k, v in tasks.items()}}
     write_json(out_dir / "e9_summary.json", out)
     return out
