@@ -268,6 +268,14 @@ and which earlier outputs are void.
   component that loads on neuron `j`, with a calibrated threshold) is the next method step. It
   is not implemented. Until then, the honest statement for the dense regime is that `P_j` is
   identified only up to antipodal pairs.
+* **Census across regimes (seed 0).** `d = 8`: probability 0.03 → 22 features, 0 pairs, 22
+  directions; 0.1 → 18 features, 5 pairs, 13 directions. `d = 16`: 0.1 → 30 features, 11
+  pairs, 19 directions; 0.3 → 23 features, 7 pairs, 16 directions. The overcompleteness gate
+  fires exactly where distinct directions exceed `d`.
+* **E12c (false alarms, E11's 2,500 datasets).** The gate fired on 1 of 2,400 non-overcomplete
+  datasets (0.04 %, one `cooccurrence_partial` dataset) and widths are unchanged. On planted
+  `overcomplete_24` it fired on only 5 %, but the second-moment misfit gate already abstains on
+  every one of those datasets.
 
 ### 17. The 27 confidently-wrong cumulant-ISMB neurons in E11, and `ismb_cum_v2`
 * **What failed.** 27 of 40,000 neuron intervals in 15 of 2,500 datasets, every one off by

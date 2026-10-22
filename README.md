@@ -34,7 +34,7 @@ specification and the core reading syllabus (18 Oct 2026).*
 3. [What is new here](#3-what-is-new-here)
 4. [Method: ISMB in one picture](#4-method-ismb-in-one-picture)
 5. [Results so far](#5-results-so-far)
-6. [Experiments E0–E11](#6-experiments-e0e11)
+6. [Experiments E0–E13](#6-experiments-e0e13)
 7. [Quickstart](#7-quickstart)
 8. [Repository map](#8-repository-map)
 9. [Assumptions and honesty rules](#9-assumptions-and-honesty-rules)
@@ -154,10 +154,22 @@ profiles) is measured in E2/E4 rather than assumed away.
    non-stationary-noise datasets and on 0–1.3 % of correctly specified ones. Under allowed but
    awkward noise it abstains needlessly but safely: 8 % with correlated stationary noise, 41 %
    with Student-t noise.
-8. **Open failure: learned overcomplete geometry (E5, full run: 5 seeds, 10k steps).** Every
-   trained toy model represents more features than dimensions (15–32 in `d` = 8 or 16). The gate
-   fires on 40–60 % of models at `d = 8, p ≤ 0.1` but misses the rest, where ISMB undercovers
-   (0.33–0.65 at `d = 8`; 0.80–0.95 at `d = 16`). This matters most for real language models.
+8. **Learned overcomplete geometry: two causes, one fixed (E5 full run; E12; exploratory).**
+   Every trained toy model represents more features than dimensions (15–31 in `d` = 8 or 16),
+   and ISMB undercovers (0.33–0.95). Every miss is an undercount. Two causes:
+   * *Genuine overcompleteness* (more distinct directions than neurons; sparse features). A
+     fourth-order cumulant rank test (`bounds/overcomplete.py`) detects it, and ISMB with the
+     gate abstains: coverage at feature probability 0.03 rises from 0.43 / 0.80 to 1.00. On
+     E11's 2,400 non-overcomplete datasets it fired once (0.04 %), with no width cost. Its
+     count of singular values above the noise floor is a certified lower bound on the number
+     of features in a block, and it was never above the truth.
+   * *Antipodal superposition* (dense features). The models store features as pairs `w`, `−w`,
+     leaving exactly `d` distinct directions. No second- or fourth-order statistic can tell the
+     two apart, so `P_j` is not identified there at any sample size, and plain ISMB gets
+     *worse* with more data (coverage 0.93 → 0.55 at `d = 16`). A sign-split check separates
+     antipodal from single directions perfectly in the toys but needs non-negative features;
+     it is the next method step (lab notebook §16–§16a). This matters most for real language
+     models.
 9. **SAE counts are not multiplicity (E6, full run).** TopK-SAE decoder counts over-count by
    5–28 features per neuron, worse with larger dictionaries, even at 0.96 FVE. Reconstruction
    quality and count error correlate at −0.53.
@@ -430,9 +442,65 @@ which is outside the square model, so the honest outcome is abstention):
 Correlation between reconstruction quality (FVE) and count error: **-0.53**. Good
 reconstruction does not certify multiplicity (plan p.10).
 
+### E12 — overcompleteness gate (fourth-order cumulant rank; exploratory)
+
+Same 30 trained toy models as E5. `_oc` methods abstain when the rank test finds more non-Gaussian features than neurons. *gate* = share of models where it fired; *rank LB* = mean certified lower bound on the number of features (never above the truth: *LB valid*).
+
+Coverage, 5,000 rows per environment (results/e12_oc_gate_toys):
+
+| d | feature prob | ISMB | ISMB + gate | ISMB-cum | ISMB-cum + gate | gate | rank LB | true features | LB valid |
+|---|---|---|---|---|---|---|---|---|---|
+| 8 | 0.03 | 0.42 | 1.00 | 0.40 | 1.00 | 1.00 | 16.40 | 22.80 | 1.00 |
+| 8 | 0.10 | 0.65 | 0.80 | 0.40 | 0.80 | 0.80 | 9.40 | 17.40 | 1.00 |
+| 8 | 0.30 | 0.33 | 0.28 | 0.07 | 0.07 | 0.00 | 7.60 | 15.20 | 1.00 |
+| 16 | 0.03 | 0.80 | 1.00 | 0.29 | 1.00 | 1.00 | 17.80 | 28.60 | 1.00 |
+| 16 | 0.10 | 0.95 | 1.00 | 0.31 | 0.82 | 0.80 | 16.80 | 29.40 | 1.00 |
+| 16 | 0.30 | 0.93 | 0.93 | 0.59 | 0.59 | 0.00 | 15.00 | 23.00 | 1.00 |
+
+Coverage, 20,000 rows per environment (results/e12_oc_gate_toys_n20000):
+
+| d | feature prob | ISMB | ISMB + gate | ISMB-cum | ISMB-cum + gate | gate | rank LB | true features | LB valid |
+|---|---|---|---|---|---|---|---|---|---|
+| 8 | 0.03 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 17.20 | 22.80 | 1.00 |
+| 8 | 0.10 | 0.80 | 0.80 | 0.80 | 0.80 | 0.80 | 9.40 | 17.40 | 1.00 |
+| 8 | 0.30 | 0.05 | 0.05 | 0.00 | 0.00 | 0.00 | 7.80 | 15.20 | 1.00 |
+| 16 | 0.03 | 0.86 | 1.00 | 0.62 | 1.00 | 1.00 | 20.00 | 28.60 | 1.00 |
+| 16 | 0.10 | 0.53 | 0.90 | 0.28 | 0.82 | 0.80 | 16.80 | 29.40 | 1.00 |
+| 16 | 0.30 | 0.55 | 0.55 | 0.34 | 0.34 | 0.00 | 15.80 | 23.00 | 1.00 |
+
+False alarms on E11's exact datasets (100 per condition; only `overcomplete_24` is overcomplete, so every other firing is a needless abstention):
+
+| condition | gate | ISMB cov | +gate cov | ISMB width | +gate width | ISMB-cum cov | +gate cov | ISMB-cum width | +gate width |
+|---|---|---|---|---|---|---|---|---|---|
+| clean | 0.00 | 1.00 | 1.00 | 6.25 | 6.26 | 1.00 | 1.00 | 0.47 | 0.47 |
+| collinear_pair | 0.00 | 1.00 | 1.00 | 6.40 | 6.39 | 1.00 | 1.00 | 0.18 | 0.18 |
+| collinear_pair_gaussianity_0.5 | 0.00 | 1.00 | 1.00 | 6.01 | 5.97 | 1.00 | 1.00 | 1.00 | 0.99 |
+| collinear_pair_gaussianity_0.9 | 0.00 | 1.00 | 1.00 | 6.16 | 6.14 | 1.00 | 1.00 | 5.61 | 5.61 |
+| collinear_pair_gaussianity_1.0 | 0.00 | 1.00 | 1.00 | 5.88 | 5.92 | 1.00 | 1.00 | 5.34 | 5.29 |
+| collinear_triple | 0.00 | 1.00 | 1.00 | 6.53 | 6.56 | 1.00 | 1.00 | 0.31 | 0.31 |
+| cooccurrence_partial | 0.01 | 1.00 | 1.00 | 6.89 | 6.97 | 1.00 | 1.00 | 0.93 | 0.93 |
+| cooccurrence_perfect | 0.00 | 1.00 | 1.00 | 7.24 | 7.24 | 0.99 | 0.99 | 1.21 | 1.21 |
+| coupled_magnitudes | 0.00 | 1.00 | 1.00 | 6.32 | 6.32 | 1.00 | 1.00 | 0.70 | 0.70 |
+| few_envs_3 | 0.00 | 1.00 | 1.00 | 15.91 | 15.93 | 1.00 | 1.00 | 0.44 | 0.45 |
+| few_envs_4 | 0.00 | 1.00 | 1.00 | 13.90 | 13.94 | 1.00 | 1.00 | 0.37 | 0.38 |
+| gaussianity_0.5 | 0.00 | 1.00 | 1.00 | 6.20 | 6.17 | 1.00 | 1.00 | 1.59 | 1.57 |
+| gaussianity_0.9 | 0.00 | 1.00 | 1.00 | 5.54 | 5.53 | 1.00 | 1.00 | 5.00 | 5.04 |
+| gaussianity_1.0 | 0.00 | 1.00 | 1.00 | 5.62 | 5.59 | 1.00 | 1.00 | 5.07 | 5.09 |
+| invisible_factors | 0.00 | 1.00 | 1.00 | 9.10 | 9.12 | 1.00 | 1.00 | 0.46 | 0.46 |
+| loadings_near_tau | 0.00 | 1.00 | 1.00 | 6.77 | 6.79 | 1.00 | 1.00 | 0.56 | 0.55 |
+| many_envs_8 | 0.00 | 1.00 | 1.00 | 2.82 | 2.82 | 1.00 | 1.00 | 0.44 | 0.44 |
+| near_duplicate_columns | 0.00 | 1.00 | 1.00 | 6.81 | 6.79 | 1.00 | 1.00 | 0.44 | 0.43 |
+| noise_correlated_stationary | 0.00 | 1.00 | 1.00 | 10.22 | 10.25 | 0.99 | 0.99 | 2.32 | 2.29 |
+| noise_env_heteroscedastic | 0.00 | 1.00 | 1.00 | 16.00 | 16.00 | 1.00 | 1.00 | 16.00 | 16.00 |
+| noise_env_scaled | 0.00 | 1.00 | 1.00 | 16.00 | 16.00 | 1.00 | 1.00 | 16.00 | 16.00 |
+| noise_student_t | 0.00 | 1.00 | 1.00 | 12.02 | 11.93 | 1.00 | 1.00 | 8.37 | 8.31 |
+| overcomplete_24 | 0.05 | 1.00 | 1.00 | 16.00 | 16.00 | 1.00 | 1.00 | 16.00 | 16.00 |
+| unknown_K_8 | 0.00 | 1.00 | 1.00 | 7.25 | 7.28 | 1.00 | 1.00 | 0.33 | 0.34 |
+| weak_diversity | 0.00 | 1.00 | 1.00 | 15.10 | 15.11 | 1.00 | 1.00 | 0.45 | 0.46 |
+
 <!-- RESULTS:END -->
 
-## 6. Experiments E0–E11
+## 6. Experiments E0–E13
 
 Full designs, expected patterns, stop rules and compute estimates are in
 [`docs/EXPERIMENT_PLAN.md`](docs/EXPERIMENT_PLAN.md).
@@ -451,6 +519,8 @@ Full designs, expected patterns, stop rules and compute estimates are in
 | E9 | Causal validation (matched-control ablation) | p.9 | `configs/lm/e9_pythia*.yaml` | implemented; smoke-tested offline |
 | E10 | Adaptive environment selection | p.8 (optional) | `configs/planted/e10_adaptive_envs.yaml` | ✅ full run (100 reps) |
 | E11 | Cumulant-aware ISMB vs ISMB (25 conditions) | README open item 0 | `configs/planted/e11_cumulant_ismb.yaml` | ✅ full run |
+| E12 | Overcompleteness gate: E5 toys at 5k and 20k rows per environment; false alarms on E11's datasets | E5 diagnosis | `configs/toy/e12_oc_gate_toys*.yaml`, `configs/planted/e12_oc_gate_planted.yaml` | ✅ full run |
+| E13 | `ismb_cum_v2` vs `ismb_cum` on fresh datasets (10 conditions) | E11 misses | `configs/planted/e13_ismb_cum_v2.yaml` | running |
 
 ## 7. Quickstart
 
@@ -550,9 +620,14 @@ P2, S11–S12, S17–S27, X2–X4, X8–X9) to the module, test or experiment th
 ## 11. Open items
 
 0. **Cumulant-aware ISMB.** Implemented (`ismb_cum`, THEORY §8) and validated in the full E11
-   run (finding 6). Open: a coverage argument for the higher-moment information set to go with
-   Propositions 1–2, and the residual confidently-wrong rate (≤ 0.6 % of neurons) under
-   correlated stationary noise and perfect co-occurrence (lab notebook §13, §15).
+   run (finding 6). Its 27 confidently-wrong neurons in E11 are explained (lab notebook §17):
+   merged columns under correlated or heavy-tailed noise, and a co-occurrence test that skipped
+   ambiguously visible components. `ismb_cum_v2` fixes both and adds the overcompleteness gate;
+   E13 is checking it on fresh datasets. Open: a coverage argument for the higher-moment
+   information set.
+0a. **Antipodal superposition.** Features stored as `w` and `−w` are invisible to every
+   even-order statistic, so `P_j` is identified only up to antipodal pairs (lab notebook §16a).
+   A sign-split extension needs a declared non-negativity assumption and is not built yet.
 1. **Statistician review** of Proposition 1, Lemma 2, Proposition 2 and the ISMB coverage
    argument (plan p.8 and syllabus S23 both flag this; questions in
    [`docs/REVIEW_PACKET.md`](docs/REVIEW_PACKET.md)). Until it is done, these are labelled

@@ -290,9 +290,81 @@ unchanged and weakens fourth-order information).
 """
 
 
+def section_e12() -> str:
+    a, b = R / "e12_oc_gate_toys", R / "e12_oc_gate_toys_n20000"
+    if not (a / "e5_summary.csv").exists():
+        return ""
+    out = ["### E12 — overcompleteness gate (fourth-order cumulant rank; exploratory)\n",
+           "Same 30 trained toy models as E5. `_oc` methods abstain when the rank test finds more "
+           "non-Gaussian features than neurons. *gate* = share of models where it fired; *rank LB* = "
+           "mean certified lower bound on the number of features (never above the truth: *LB valid*).\n"]
+    for p, n in ((a, 5000), (b, 20000)):
+        if not (p / "e5_summary.csv").exists():
+            continue
+        s = pd.read_csv(p / "e5_summary.csv")
+        m = pd.read_csv(p / "e5_models.csv")
+        piv = s.pivot_table(index=["d", "feature_prob"], columns="method", values="coverage", sort=False)
+        g = m.groupby(["d", "feature_prob"])
+        piv["gate"] = g["ismb_oc__oc_rejected"].mean()
+        piv["rank_lb"] = g["ismb_oc__oc_rank_lower_bound"].mean()
+        piv["n_target"] = g["n_target"].mean()
+        piv["lb_valid"] = (m["ismb_oc__oc_rank_lower_bound"] <= m["n_target"]).groupby([m.d, m.feature_prob]).mean()
+        piv = piv.reset_index()
+        cols = ["d", "feature_prob", "ismb", "ismb_oc", "ismb_cum", "ismb_cum_oc", "gate", "rank_lb", "n_target",
+                "lb_valid"]
+        out.append(f"Coverage, {n:,} rows per environment ({rel(p)}):\n")
+        out.append(md_table(piv, [c for c in cols if c in piv],
+                            ["d", "feature prob", "ISMB", "ISMB + gate", "ISMB-cum", "ISMB-cum + gate", "gate",
+                             "rank LB", "true features", "LB valid"][:len([c for c in cols if c in piv])]) + "\n")
+    c = R / "e12_oc_gate_planted"
+    e11 = R / "e11_full"
+    if (c / "e11_by_condition.csv").exists() and (e11 / "e11_by_condition.csv").exists():
+        new = pd.read_csv(c / "e11_by_condition.csv", keep_default_na=False, na_values=[""])
+        old = pd.read_csv(e11 / "e11_by_condition.csv", keep_default_na=False, na_values=[""])
+        ds = pd.read_csv(c / "e11_datasets.csv")
+        both = pd.concat([old[old.method.isin(["ismb", "ismb_cum"])], new])
+        piv = both.pivot_table(index="condition", columns="method", values=["coverage", "width_mean"], sort=False)
+        piv.columns = [f"{m}:{v}" for v, m in piv.columns]
+        piv["gate"] = ds.groupby("condition")["ismb_oc__oc_rejected"].mean()
+        piv = piv.reindex(list(dict.fromkeys(old.condition))).reset_index()
+        cols = ["condition", "gate", "ismb:coverage", "ismb_oc:coverage", "ismb:width_mean", "ismb_oc:width_mean",
+                "ismb_cum:coverage", "ismb_cum_oc:coverage", "ismb_cum:width_mean", "ismb_cum_oc:width_mean"]
+        out.append("False alarms on E11's exact datasets (100 per condition; only `overcomplete_24` is "
+                   "overcomplete, so every other firing is a needless abstention):\n")
+        out.append(md_table(piv, [c for c in cols if c in piv],
+                            ["condition", "gate", "ISMB cov", "+gate cov", "ISMB width", "+gate width",
+                             "ISMB-cum cov", "+gate cov", "ISMB-cum width", "+gate width"]) + "\n")
+    return "\n".join(out)
+
+
+def section_e13() -> str:
+    p = R / "e13_ismb_cum_v2"
+    if not (p / "e11_by_condition.csv").exists():
+        return ""
+    df = pd.read_csv(p / "e11_by_condition.csv", keep_default_na=False, na_values=[""])
+    piv = df.pivot_table(index="condition", columns="method",
+                         values=["coverage", "all_covered", "confidently_wrong", "width_mean"], sort=False)
+    piv.columns = [f"{m}:{v}" for v, m in piv.columns]
+    piv = piv.reindex(list(dict.fromkeys(df.condition))).reset_index()
+    rows = pd.read_csv(p / "e11_rows.csv.gz")
+    iv = rows[rows.method.isin(["ismb_cum", "ismb_cum_v2"])]
+    miss = iv.assign(m=(iv.truth < iv.lower) | (iv.truth > iv.upper)).groupby("method")["m"].sum()
+    cols = ["condition", "ismb_cum:coverage", "ismb_cum_v2:coverage", "ismb_cum:all_covered", "ismb_cum_v2:all_covered",
+            "ismb_cum:confidently_wrong", "ismb_cum_v2:confidently_wrong", "ismb_cum:width_mean",
+            "ismb_cum_v2:width_mean"]
+    return f"""### E13 — `ismb_cum_v2` on fresh datasets *(full run: {cfg_of(p).get("reps", "?")} datasets per condition, new seed; exploratory)*
+
+v2 adds the overcompleteness gate, stability widening and dependence tests on ambiguous pairs
+(lab notebook §16–§17). Those fixes were designed on E11's failing datasets, so this run uses
+new ones. Missed neurons in total: ISMB-cum {int(miss.get("ismb_cum", 0))}, v2 {int(miss.get("ismb_cum_v2", 0))}.
+
+{md_table(piv, [c for c in cols if c in piv], ["condition", "cum cov", "v2 cov", "cum all", "v2 all", "cum wrong", "v2 wrong", "cum width", "v2 width"], nd=3)}
+"""
+
+
 def build() -> str:
-    parts = [section_e0(), section_e4(), section_e1(), section_repair(), section_e2(), section_e11(), section_e3(),
-             section_e10(), section_e5_e6()]
+    parts = [section_e0(), section_e4(), section_e1(), section_repair(), section_e2(), section_e11(), section_e13(),
+             section_e3(), section_e10(), section_e5_e6(), section_e12()]
     return "\n".join(p for p in parts if p)
 
 
