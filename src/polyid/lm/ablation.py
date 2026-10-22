@@ -116,8 +116,21 @@ class AblationReport:
     summary: pd.DataFrame
 
 
+def pair_sum(scores: np.ndarray, families: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Sum item scores within each family (SemCor swap pairs: the two items of a pair sum to
+    matched-minus-swapped log-probability). Returns ``(family_ids, summed)`` in first-seen order."""
+    ids, inv = np.unique(families, return_inverse=True)
+    order = np.argsort([np.flatnonzero(inv == k)[0] for k in range(len(ids))])
+    summed = np.bincount(inv, weights=scores, minlength=len(ids))
+    return ids[order], summed[order]
+
+
 def run_ablation(model, tokenizer, layer: int, candidates: np.ndarray, control_sets: list[np.ndarray],
-                 tasks: dict[str, list[ChoiceItem]], device: str = "cpu") -> AblationReport:
+                 tasks: dict[str, list[ChoiceItem]], device: str = "cpu",
+                 paired_tasks: frozenset[str] = frozenset()) -> AblationReport:
+    """Score every task intact, with the candidates ablated, and with each control set ablated.
+    For ``paired_tasks`` the unit is a family (a SemCor swap pair): item scores are summed within
+    it, and intervals cluster on the family prefix before ``#`` (the lemma)."""
     rows = []
     for task, items in tasks.items():
         fam = np.array([it.family for it in items])
@@ -129,9 +142,16 @@ def run_ablation(model, tokenizer, layer: int, candidates: np.ndarray, control_s
             with ablate_neurons(model, layer, cs):
                 ctrl.append(choice_scores(model, tokenizer, items, device=device))
         ctrl = np.stack(ctrl)  # sets x items
-        for i in range(len(items)):
-            rows.append({"task": task, "item": i, "family": fam[i], "intact": base[i], "candidate": cand[i],
-                         "control_mean": ctrl[:, i].mean(), **{f"control_{k}": ctrl[k, i] for k in range(len(ctrl))}})
+        cluster = fam
+        if task in paired_tasks:
+            fam, base = pair_sum(base, np.array([it.family for it in items]))
+            _, cand = pair_sum(cand, np.array([it.family for it in items]))
+            ctrl = np.stack([pair_sum(c, np.array([it.family for it in items]))[1] for c in ctrl])
+            cluster = np.array([f.split("#")[0] for f in fam])
+        for i in range(len(fam)):
+            rows.append({"task": task, "item": i, "family": cluster[i], "unit": fam[i], "intact": base[i],
+                         "candidate": cand[i], "control_mean": ctrl[:, i].mean(),
+                         **{f"control_{k}": ctrl[k, i] for k in range(len(ctrl))}})
     df = pd.DataFrame(rows)
     summ = []
     for task, g in df.groupby("task"):

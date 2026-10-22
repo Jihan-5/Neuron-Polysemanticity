@@ -229,11 +229,15 @@ that narrower claim.
 
 **Items (rule L7).** The agreement task uses 4,000 BLiMP minimal pairs (`data/blimp`,
 `lm/blimp.py`), above the plan's 2,000 per task. Continuations are scored by their full
-log-probability, so multi-token words such as " hasn't" count in full. **Open item:** the
-semantic task has no human-validated source yet. WiC was the first choice, but models far larger
-than Pythia score near chance on it, so an ablation could not lower it. The template banks
-(768 semantic, 384 agreement items) were drafted by the AI coding assistant, so they are smoke-test
-placeholders only, and E9 refuses them on a real model.
+log-probability, so multi-token words such as " hasn't" count in full. The semantic task uses
+3,284 SemCor swap pairs over 455 nouns (`data/semcor`, `lm/semcor.py`). A pair holds two real
+sentences that use the same noun in different WordNet supersenses, each cut after the noun. The
+pair score is matched-minus-swapped log-probability, so every prefix and continuation enters once
+on each side. **Pre-check:** before anything is ablated, the intact model must reach 0.65 on 727
+dev pairs over 103 other nouns; otherwise E9 stops, because an ablation cannot lower a task the
+model does not solve (why WiC, near chance even for very large models, was rejected). The
+template banks (768 semantic, 384 agreement items) were drafted by the AI coding assistant, so
+they are smoke-test placeholders only, and E9 refuses them on a real model.
 
 ## E10 — Adaptive environment selection (optional; `configs/planted/e10_adaptive_envs.yaml`)
 

@@ -322,5 +322,14 @@ and which earlier outputs are void.
   single-token continuations this equals the previous last-position logit difference
   (tested); multi-token words such as " hasn't" used to be scored by their first token only.
 * **WiC is ruled out for the semantic task.** Even 175B–530B models score near chance on it
-  (about 49 % zero-shot, 55–58 % few-shot), so an ablation cannot lower Pythia's accuracy. The
-  semantic source is an open decision (README open item 3).
+  (about 49 % zero-shot, 55–58 % few-shot), so an ablation cannot lower Pythia's accuracy.
+* **SemCor swap pairs instead (decided 2026-10-22).** 4,011 pairs over 558 nouns built
+  deterministically from SemCor 3.0 (`scripts/build_semcor_items.py`; two runs give identical
+  bytes): same noun, different WordNet supersense, real sentences cut after the noun.
+  CoarseWSD-20 was considered and rejected: its labels come mainly from Wikipedia links, its
+  repository has no licence, and choosing between sense names is likely too hard for a 160M
+  model. SemCor's labels were hand-annotated against WordNet 1.6 and mapped to 3.0
+  automatically. Its licence allows redistribution with the Princeton notice, which is
+  vendored. Splits are by noun: 727 dev pairs (103 nouns) for the pre-check, 3,284 test pairs
+  (455 nouns) for E9. On the offline smoke model the pre-check gives 0.52, chance, as it
+  should for random weights. Whether Pythia clears 0.65 is the first thing the GPU run checks.

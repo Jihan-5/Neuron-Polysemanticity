@@ -112,3 +112,32 @@ def test_blimp_items_and_full_continuation_scoring():
             assert abs(s[i] - float(ref)) < 1e-4
         multi = choice_scores(m, tok, [ChoiceItem("ab", " has", " have", "t", "f")])
     assert np.isfinite(multi).all()
+
+
+def test_semcor_pairs_split_and_paired_scoring():
+    """SemCor swap pairs: checksum-verified, lemma-disjoint dev/test splits, two items per pair whose
+    summed score is matched-minus-swapped log-probability (what run_ablation reports per pair)."""
+    import torch
+
+    from polyid.lm.ablation import choice_scores, continuation_logprobs, pair_sum, run_ablation
+    from polyid.lm.hooks import tiny_random_gptneox
+    from polyid.lm.semcor import load_semcor_pairs, semcor_choice_items
+    from polyid.lm.smoke_tokenizer import ByteTokenizer
+
+    dev, test = load_semcor_pairs("dev"), load_semcor_pairs("test")
+    assert len(test) >= 2000 and not ({p["lemma"] for p in dev} & {p["lemma"] for p in test})
+    assert all(p["sense_a"] != p["sense_b"] for p in test[:200])
+    items = semcor_choice_items("test")[:6]
+    assert [it.family for it in items[::2]] == [it.family for it in items[1::2]]
+
+    m, tok = tiny_random_gptneox(n_layers=2, d_model=32, d_mlp=64), ByteTokenizer()
+    with torch.no_grad():
+        fam, summed = pair_sum(choice_scores(m, tok, items), np.array([it.family for it in items]))
+        p = load_semcor_pairs("test")[:3]
+        lp = lambda pre, c: continuation_logprobs(m, tok, [pre], [c])[0]
+        ref = [lp(q["prefix_a"], q["cont_a"]) + lp(q["prefix_b"], q["cont_b"])
+               - lp(q["prefix_a"], q["cont_b"]) - lp(q["prefix_b"], q["cont_a"]) for q in p]
+        assert list(fam) == [q["pair_id"] for q in p] and np.allclose(summed, ref, atol=1e-3)
+        rep = run_ablation(m, tok, 1, np.array([0, 1]), [np.array([2, 3])], {"semantic": items},
+                           paired_tasks=frozenset({"semantic"}))
+    assert len(rep.per_item) == 3 and set(rep.per_item.family) == {q["lemma"] for q in p}
