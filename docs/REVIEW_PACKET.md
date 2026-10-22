@@ -58,9 +58,17 @@ honest uncertainty when it cannot be pinned down.
 8. For a manuscript, which of claims 1–5 can be called theorems as written, which need
    changes, and which should be presented as "numerically verified claims"?
 
+**Prior art.**
+9. Proposition 1 specialises second-order blind-source-separation identifiability (Pham &
+   Cardoso 2001; Lahat, Cardoso & Messer 2012; THEORY §2). Is anything in Proposition 1 beyond
+   those results, apart from its consequence for `P_j`? Should it be stated as a corollary of
+   theirs?
+
 ## What the answer changes
 
-If claims 1–3 hold and the inference argument (claims 4–5) is judged sound pointwise with
-stated conditions, `theory_gate_passed` can be set to `true` with a dated amendment, and the
-Pythia experiments (E8/E9) may run. If not, the gate stays closed, or the affected claims are
-downgraded to "numerically verified" in every write-up, as the preregistration requires.
+The gate was opened on 2026-10-22 by the preregistration's downgrade route: until this review
+is done, claims 1–5 are labelled "numerically verified claims" everywhere, and the Pythia
+experiments (E8/E9) may run on that basis. If claims 1–3 hold and the inference argument
+(claims 4–5) is judged sound pointwise with stated conditions, the theorem wording is restored
+with a dated amendment. If not, the affected claims stay downgraded, and any E8/E9 conclusion
+that depends on them is reported as conditional.

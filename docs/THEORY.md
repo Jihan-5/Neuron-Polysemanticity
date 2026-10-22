@@ -1,12 +1,14 @@
 # Theory: identification, impossibility, and bounds for thresholded feature multiplicity
 
-> **Status.** Proposition 1, Lemma 2 and Proposition 2 below come with complete
-> elementary proofs and are machine-checked numerically in `tests/`
+> **Status (2026-10-22): numerically verified claims, statistician review pending.**
+> Proposition 1, Lemma 2 and Proposition 2 below come with elementary proofs and are
+> machine-checked numerically in `tests/`
 > (`test_schur_horn.py`, `test_jointdiag.py`, `test_metrics_stats_cli.py::test_two_explanations_*`).
 > The coverage statements for the *procedures* (§5–§6) are asymptotic arguments
-> under stated conditions, **not** uniform-validity theorems. They have not been
-> reviewed by a statistician. The plan (p.8) and syllabus (S23) both flag that step
-> as the highest-risk part of the project; treat it accordingly.
+> under stated conditions, **not** uniform-validity theorems. None of this has been
+> reviewed by a statistician, so until it is, cite all of it as *numerically verified
+> claims*, not theorems (preregistration §3, amendment of 2026-10-22). The plan (p.8) and
+> syllabus (S23) both flag this as the highest-risk part of the project.
 
 Notation: `d` neurons, `K` latent factors, `E` environments. For a matrix `A`, `a_k`
 is column `k` and `A_G` the columns indexed by `G`. `vech` stacks the upper triangle.
@@ -42,9 +44,20 @@ joint diagonaliser of $\{D_e\}$ recovers `A` up to scale and permutation (Pfiste
 JMLR 2019). We do not claim this. The rest of this document concerns what happens when the
 condition fails, and what that does to $P_j$.
 
+**Prior art for §3 (not a novelty claim).** Identification from non-stationary variance is
+classical second-order blind source separation. Matsuoka, Ohya & Kawamoto (Neural Networks,
+1995) and Pham & Cardoso (IEEE Trans. Signal Processing, 2001) separate sources whose variance
+profiles are not proportional. Lahat, Cardoso & Messer (IEEE Trans. Signal Processing, 2012)
+treat the multidimensional case, where groups of sources are identified only as subspaces, and
+give necessary and sufficient identifiability conditions for joint block diagonalisation of
+piecewise-stationary Gaussian data. Proposition 1 is the special case needed here: classes of
+collinear profiles, with unit-norm columns fixing the within-class freedom to a rotation. What
+this document adds is the explicit form of that class and its consequence for $P_j$ (Lemma 2,
+§7), not the identification result itself.
+
 ---
 
-## 3. Proposition 1 — the exact second-moment identified set
+## 3. Proposition 1 — the exact second-moment identified set *(numerically verified; review pending)*
 
 **Setting.** `A` square and invertible; every factor visible (a nonzero profile). Partition
 the factors into classes of mutually collinear profiles: within a class `G`,
@@ -95,7 +108,7 @@ agree to $5.6\times10^{-17}$ but whose $P_j$ differ (`results/e0_theory_gate/e0_
 
 ---
 
-## 4. Lemma 2 — exact multiplicity range of an unidentified class (Schur–Horn)
+## 4. Lemma 2 — exact multiplicity range of an unidentified class (Schur–Horn) *(numerically verified; review pending)*
 
 Column `i` of $M_G R$ reaches the threshold on neuron `j` iff
 $(m_j^\top r_i)^2 \ge \tau^2\, r_i^\top M_G^\top M_G r_i$, i.e.
@@ -137,7 +150,7 @@ than necessary.
 
 ---
 
-## 5. Proposition 2 — co-occurrence that no second-moment method can detect
+## 5. Proposition 2 — co-occurrence that no second-moment method can detect *(numerically verified; review pending)*
 
 **Setting.** A block `G` of factors shares one activity switch $b \sim \mathrm{Bern}(p_e)$,
 with independent magnitudes $s_k$ (means $\mu_k$, variances $\sigma_k^2$, constant across

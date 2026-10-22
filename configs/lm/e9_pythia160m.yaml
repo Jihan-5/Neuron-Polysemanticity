@@ -1,7 +1,7 @@
 # E9 — causal validation on Pythia-160M at the middle layer (block 5).
 experiment: e9_causal_validation
 seed: 20261018
-theory_gate_passed: false
+theory_gate_passed: true         # opened 2026-10-22 by the downgrade route (docs/PREREGISTRATION.md, amendments)
 model: EleutherAI/pythia-160m
 revision: step143000
 device: cuda

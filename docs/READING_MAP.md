@@ -31,3 +31,4 @@ and Override Lab in its own project.
 | X4 | PSI | — | Conditional: only if adding activation-cluster scoring |
 | X8 | Dietterich (McNemar) | `stats.mcnemar_exact` | Reproduces the spec doc's worked p ≈ 1.87e-4 (`tests/test_metrics_stats_cli.py`) |
 | X9 | Kolda & Bader; SOBIUM | E2 `overcomplete_24` | The overcomplete extension is *not* claimed; SOBIUM is the prior art to cite before any tensor method |
+| X10 | Matsuoka, Ohya & Kawamoto 1995; Pham & Cardoso 2001; Lahat, Cardoso & Messer 2012 (second-order BSS from non-stationary variance; multidimensional ICA / joint block diagonalisation) | THEORY §2–§3 | Proposition 1 is presented as a specialisation of their identifiability results, not a new identification theorem (preregistration amendment 2026-10-22) |

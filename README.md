@@ -6,9 +6,9 @@
 
 <p>
 <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-2a78d6">
-<img alt="tests" src="https://img.shields.io/badge/tests-107%20passing-0ca30c">
+<img alt="tests" src="https://img.shields.io/badge/tests-114%20passing-0ca30c">
 <img alt="status" src="https://img.shields.io/badge/status-planted%20full%20runs%20done%20%C2%B7%20LM%20phase%20pending-0ca30c">
-<img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-E0%20%26%20E4%20met%20%C2%B7%20review%20pending-6250d6">
+<img alt="theory gate" src="https://img.shields.io/badge/theory%20gate-open%20%C2%B7%20proofs%20numerically%20verified%2C%20review%20pending-6250d6">
 </p>
 
 *Research B / statistical interpretability. Built from the research plan, the technical
@@ -21,8 +21,9 @@ specification and the core reading syllabus (18 Oct 2026).*
 > labelled *full run* or *pilot*. The illustrative numbers in the "Hypothetical Results"
 > specification are not reproduced or targeted anywhere. Language-model experiments (E8/E9)
 > are implemented and pass offline smoke tests on a random tiny GPT-NeoX. They have **not**
-> been run on Pythia: this environment cannot reach Hugging Face, and the plan's theory gate
-> comes first.
+> been run on Pythia, because this environment cannot reach Hugging Face. The theory gate is
+> open as of 2026-10-22: the proofs are labelled *numerically verified claims* until a
+> statistician has reviewed them (preregistration §3 and its amendment of that date).
 
 ---
 
@@ -76,9 +77,9 @@ about $P_j$ when several decompositions fit**:
 
 | | Result | Status |
 |---|---|---|
-| **Prop. 1** | Under second moments, a class of factors with collinear variance profiles is identified exactly up to $\{\mathrm{normalize}(A_G\Lambda^{1/2}R): R \in O(g)\}$ | proved ([THEORY §3](docs/THEORY.md#3-proposition-1--the-exact-second-moment-identified-set)), tested |
-| **Lemma 2** | The **exact** min/max of a class's contribution to $P_j$ follows from the Schur–Horn theorem as closed-form majorisation checks, so no search over rotations is needed | proved (§4); exact against a 20k-angle sweep |
-| **Prop. 2** | **Perfect co-occurrence cannot be detected from second moments.** A shared-switch block of any size is exactly fit by an uncorrelated model with *different* loadings, so every second-moment method can be confidently wrong | proved (§5); regression test |
+| **Prop. 1** | Under second moments, a class of factors with collinear variance profiles is identified exactly up to $\{\mathrm{normalize}(A_G\Lambda^{1/2}R): R \in O(g)\}$. This specialises known identifiability results for second-order blind source separation (Matsuoka, Ohya & Kawamoto 1995; Pham & Cardoso 2001; Lahat, Cardoso & Messer 2012); the new part is its consequence for $P_j$ | proof written ([THEORY §3](docs/THEORY.md#3-proposition-1--the-exact-second-moment-identified-set)); numerically verified, review pending |
+| **Lemma 2** | The **exact** min/max of a class's contribution to $P_j$ follows from the Schur–Horn theorem as closed-form majorisation checks, so no search over rotations is needed | proof written (§4); exact against a 20k-angle sweep; review pending |
+| **Prop. 2** | **Perfect co-occurrence cannot be detected from second moments.** A shared-switch block of any size is exactly fit by an uncorrelated model with *different* loadings, so every second-moment method can be confidently wrong | proof written (§5); regression test; review pending |
 | **ISMB** | A tractable bounding procedure combining the parts above: rank tests decide which factors are separated, an analytic visibility band, GMS-selected sup-t loading bands, and Schur–Horn group ranges | implemented; asymptotic argument with stated conditions (§7); **valid but not yet informative at `d = 16`** (E2 full run) |
 | **AR-grid** | A weak-identification-robust confidence set (Anderson–Rubin logic) for the certified $d=3$ problem; an empty set signals misspecification | implemented; grid-restricted |
 
@@ -468,9 +469,9 @@ bash scripts/run_pilots.sh                             # every pilot in this REA
 Every run writes `manifest.json` (config hash, git commit, library versions, seeds), tidy CSVs
 and figures. Overrides are dotted keys (`generator.n_per_env=2000`).
 
-**Language models** (needs a GPU and Hugging Face access). First record the theory-gate
-decision in the config (`theory_gate_passed: true`; criteria in
-[`docs/PREREGISTRATION.md`](docs/PREREGISTRATION.md)), then:
+**Language models** (needs a GPU and Hugging Face access). The theory-gate decision is recorded
+in the configs (`theory_gate_passed: true`; criteria and the 2026-10-22 amendment in
+[`docs/PREREGISTRATION.md`](docs/PREREGISTRATION.md)):
 
 ```bash
 polyid run configs/lm/e8_pythia160m.yaml --out results/e8_pythia160m
@@ -553,8 +554,10 @@ P2, S11–S12, S17–S27, X2–X4, X8–X9) to the module, test or experiment th
    Propositions 1–2, and the residual confidently-wrong rate (≤ 0.6 % of neurons) under
    correlated stationary noise and perfect co-occurrence (lab notebook §13, §15).
 1. **Statistician review** of Proposition 1, Lemma 2, Proposition 2 and the ISMB coverage
-   argument (plan p.8 and syllabus S23 both flag this). It is the last unmet item of the theory
-   gate. The alternative is to downgrade them to "numerically verified claims".
+   argument (plan p.8 and syllabus S23 both flag this; questions in
+   [`docs/REVIEW_PACKET.md`](docs/REVIEW_PACKET.md)). Until it is done, these are labelled
+   "numerically verified claims", which is how the gate was opened (preregistration amendment
+   of 2026-10-22). A positive review restores the theorem wording.
 2. **Full-scale runs:** done and pushed for every planted and toy experiment (E1–E6, E10,
    E11). Runs checkpoint every 40 datasets and resume after a restart (`scripts/run_full.sh`,
    `scripts/run_e11.sh`).

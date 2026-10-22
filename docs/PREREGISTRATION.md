@@ -76,3 +76,17 @@ outstanding, so `theory_gate_passed` stays `false`. The full E1/E2 runs used the
 committed before they started (commits `0bc3f14` and earlier); no setting was changed after
 seeing their results.
 
+**2026-10-22 — theory gate opened by the downgrade route of §3 (third bullet).** The E0 and E4
+criteria are met (amendments above). A statistician review is planned but not yet done. §3
+allows the alternative, which is taken here: Proposition 1, Lemma 2, Proposition 2 and the ISMB
+coverage argument are labelled "numerically verified claims (statistician review pending)" in
+`docs/THEORY.md`, the README and any manuscript until the review is complete. On that basis
+`theory_gate_passed: true` is set in `configs/lm/e8_pythia160m.yaml` and
+`configs/lm/e9_pythia160m.yaml` (the 410M and smoke configs inherit it). A positive review
+restores the theorem wording. A negative one keeps the affected claims downgraded, and any
+E8/E9 conclusion that depends on them is reported as conditional on them. Nothing in §1–§2
+changes. Also recorded: Proposition 1 specialises known second-order blind-source-separation
+identifiability results (Matsuoka et al. 1995; Pham & Cardoso 2001; Lahat, Cardoso & Messer
+2012), now cited in `docs/THEORY.md` §2. This changes the novelty claim, not any result. No
+E8/E9 run had been made when this was decided.
+

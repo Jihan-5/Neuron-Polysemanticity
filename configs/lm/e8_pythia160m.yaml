@@ -1,7 +1,7 @@
 # E8 — frozen Pythia-160M, MLP post-activations at blocks 2, 5, 8 (plan p.4). GPU recommended.
 experiment: e8_pythia_estimation
 seed: 20261018
-theory_gate_passed: false        # set to true only after E0/E4 meet the gate (docs/PREREGISTRATION.md)
+theory_gate_passed: true         # opened 2026-10-22 by the downgrade route (docs/PREREGISTRATION.md, amendments)
 model: EleutherAI/pythia-160m
 revision: step143000
 dtype: float32
