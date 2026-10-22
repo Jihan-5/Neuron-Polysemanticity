@@ -150,6 +150,13 @@ profiles) is measured in E2/E4 rather than assumed away.
    as ISMB does. Confidently wrong intervals are rare but not absent: 0.6 % of neurons under
    correlated stationary noise (the case flagged in the pilot), 0.4 % under perfect
    co-occurrence, 0.2 % with Student-t noise, 0.1 % with loadings near `τ`, 0 elsewhere.
+   **`ismb_cum_v2` (E13, fresh datasets, 100 × 10 conditions).** After diagnosing those misses
+   (lab notebook §17), v2 adds stability widening, dependence tests on ambiguously visible
+   components and the overcompleteness gate. On new datasets it removed the noise-related
+   misses (correlated noise 2 → 0, Student-t 1 → 0). Simultaneous coverage was ≥ 0.99 in every
+   condition. The cost is wider intervals under heavy-tailed noise (8.5 → 10.3); elsewhere width
+   is essentially unchanged. The remaining 4 missed neurons sit in one perfect-co-occurrence
+   dataset where the dependence test lacked power, the case Proposition 2 makes hardest.
 7. **Misfit gate (E2, full run).** It abstains to `[0, 16]` on 100 % of overcomplete and
    non-stationary-noise datasets and on 0–1.3 % of correctly specified ones. Under allowed but
    awkward noise it abstains needlessly but safely: 8 % with correlated stationary noise, 41 %
@@ -353,6 +360,25 @@ unchanged and weakens fourth-order information).
 
 <p align="center"><img src="results/e11_full/e11_ismb_vs_ismb_cum.png" width="96%"></p>
 
+### E13 — `ismb_cum_v2` on fresh datasets *(full run: 100 datasets per condition, new seed; exploratory)*
+
+v2 adds the overcompleteness gate, stability widening and dependence tests on ambiguous pairs
+(lab notebook §16–§17). Those fixes were designed on E11's failing datasets, so this run uses
+new ones. Missed neurons in total: ISMB-cum 7, v2 4.
+
+| condition | cum cov | v2 cov | cum all | v2 all | cum wrong | v2 wrong | cum width | v2 width |
+|---|---|---|---|---|---|---|---|---|
+| clean | 1.000 | 1.000 | 1.000 | 1.000 | 0.000 | 0.000 | 0.496 | 0.504 |
+| collinear_pair | 1.000 | 1.000 | 1.000 | 1.000 | 0.000 | 0.000 | 0.149 | 0.142 |
+| cooccurrence_perfect | 0.998 | 0.998 | 0.990 | 0.990 | 0.003 | 0.003 | 1.409 | 1.577 |
+| few_envs_3 | 1.000 | 1.000 | 1.000 | 1.000 | 0.000 | 0.000 | 0.453 | 0.445 |
+| gaussianity_0.9 | 1.000 | 1.000 | 1.000 | 1.000 | 0.000 | 0.000 | 5.177 | 5.319 |
+| loadings_near_tau | 1.000 | 1.000 | 1.000 | 1.000 | 0.000 | 0.000 | 0.400 | 0.402 |
+| noise_correlated_stationary | 0.999 | 1.000 | 0.990 | 1.000 | 0.001 | 0.000 | 2.676 | 2.914 |
+| noise_student_t | 0.999 | 1.000 | 0.990 | 1.000 | 0.000 | 0.000 | 8.499 | 10.344 |
+| overcomplete_24 | 1.000 | 1.000 | 1.000 | 1.000 | 0.000 | 0.000 | 16.000 | 16.000 |
+| weak_diversity | 1.000 | 1.000 | 1.000 | 1.000 | 0.000 | 0.000 | 0.594 | 0.593 |
+
 ### E3 — frequency shift with fixed loadings *(full run: 100 replicates)*
 
 Same `A`, three corpora with activity rates centred at 0.05 / 0.15 / 0.30; the truth is
@@ -520,7 +546,7 @@ Full designs, expected patterns, stop rules and compute estimates are in
 | E10 | Adaptive environment selection | p.8 (optional) | `configs/planted/e10_adaptive_envs.yaml` | ✅ full run (100 reps) |
 | E11 | Cumulant-aware ISMB vs ISMB (25 conditions) | README open item 0 | `configs/planted/e11_cumulant_ismb.yaml` | ✅ full run |
 | E12 | Overcompleteness gate: E5 toys at 5k and 20k rows per environment; false alarms on E11's datasets | E5 diagnosis | `configs/toy/e12_oc_gate_toys*.yaml`, `configs/planted/e12_oc_gate_planted.yaml` | ✅ full run |
-| E13 | `ismb_cum_v2` vs `ismb_cum` on fresh datasets (10 conditions) | E11 misses | `configs/planted/e13_ismb_cum_v2.yaml` | running |
+| E13 | `ismb_cum_v2` vs `ismb_cum` on fresh datasets (10 conditions) | E11 misses | `configs/planted/e13_ismb_cum_v2.yaml` | ✅ full run (100 reps) |
 
 ## 7. Quickstart
 
@@ -623,8 +649,9 @@ P2, S11–S12, S17–S27, X2–X4, X8–X9) to the module, test or experiment th
    run (finding 6). Its 27 confidently-wrong neurons in E11 are explained (lab notebook §17):
    merged columns under correlated or heavy-tailed noise, and a co-occurrence test that skipped
    ambiguously visible components. `ismb_cum_v2` fixes both and adds the overcompleteness gate;
-   E13 is checking it on fresh datasets. Open: a coverage argument for the higher-moment
-   information set.
+   on fresh datasets (E13) only one perfect-co-occurrence dataset in 1,000 still had misses.
+   Open: a coverage argument for the higher-moment information set, and more power for the
+   dependence test under perfect co-occurrence.
 0a. **Antipodal superposition.** Features stored as `w` and `−w` are invisible to every
    even-order statistic, so `P_j` is identified only up to antipodal pairs (lab notebook §16a).
    A sign-split extension needs a declared non-negativity assumption and is not built yet.

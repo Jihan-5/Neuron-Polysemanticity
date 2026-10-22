@@ -301,8 +301,14 @@ and which earlier outputs are void.
   change on datasets whose columns are all stable (clean, weak diversity); the main cost is
   under Student-t noise (mean width 5.3 → 8.1). The overcompleteness gate fired on none of the
   39 planted datasets checked.
-* **Caveat.** The fixes were designed on these datasets, so E13 checks `ismb_cum_v2` on fresh
-  ones (new seed, 100 × 25 conditions) before any claim.
+* **Out of sample (E13: new seed, 100 datasets × 10 conditions).** `ismb_cum` missed 7 neurons
+  (perfect co-occurrence 4, correlated noise 2, Student-t 1); v2 missed 4, all in one
+  perfect-co-occurrence dataset (rep 65) that had one ambiguous component whose dependence test
+  stayed above the Bonferroni level. That is a power limit, not the skipped-test bug.
+  Simultaneous coverage was ≥ 0.99 in every condition for v2. Width changes: Student-t 8.50 →
+  10.34, correlated noise 2.68 → 2.91, perfect co-occurrence 1.41 → 1.58, others within ±0.15.
+  The overcompleteness gate fired on 0 of 900 non-overcomplete datasets and on 4 % of
+  `overcomplete_24`, which the misfit gate already covers.
 
 ### 18. E9 items: BLiMP for agreement, a provenance correction, and WiC ruled out
 * **Provenance correction.** The template banks in `lm/templates.py` were drafted by the AI
